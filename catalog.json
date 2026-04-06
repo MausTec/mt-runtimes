@@ -1,0 +1,12 @@
+{
+    "products": {
+        "edge-o-matic": {
+            "skus": [ "EOM3K" ],
+            "versions": [ ]
+        },
+        "mercury": {
+            "skus": [ "M1K", "TRMCTL" ],
+            "versions": [ ]
+        }
+    }
+}
