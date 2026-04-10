@@ -24,8 +24,14 @@ export interface ApiDescriptor {
   events: EventDescriptor[];
 }
 
+export interface ReturnDescriptor {
+  type: "int" | "float" | "string" | "bool" | "bytes";
+  description?: string;
+}
+
 export interface EventDescriptor {
   name: string;
+  module?: string;
   permission: string | null;
   description?: string;
   payload?: PayloadField[];
@@ -33,10 +39,11 @@ export interface EventDescriptor {
 
 export interface HostFunctionDescriptor {
   name: string;
+  module?: string;
   permission: string | null;
   description?: string;
   args?: ArgDescriptor[];
-  returns?: string | null;
+  returns?: ReturnDescriptor | null;
 }
 
 export interface PayloadField {
