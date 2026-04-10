@@ -1,0 +1,32 @@
+{
+    "$schema": "https://schemas.maus-tec.com/plugin-api/v1.0.0/plugin-api.json",
+    "sku": "mt-actions",
+    "version": "1.1.0",
+    "description": "Core language builtins registered by mta_init_builtins(). Available on all platforms that ship mt-actions 1.1.0+.",
+    "functions": [
+        { "name": "eq", "permission": null, "description": "Returns true if two values are equal." },
+        { "name": "neq", "permission": null, "description": "Returns true if two values are not equal." },
+        { "name": "gt", "permission": null, "description": "Returns true if the first value is greater than the second." },
+        { "name": "lt", "permission": null, "description": "Returns true if the first value is less than the second." },
+        { "name": "gte", "permission": null, "description": "Returns true if the first value is greater than or equal to the second." },
+        { "name": "lte", "permission": null, "description": "Returns true if the first value is less than or equal to the second." },
+        { "name": "set", "permission": null, "description": "Assigns one or more variables. Full form: {var, value}. Shorthand: {key: val, ...}." },
+        { "name": "add", "permission": null, "description": "Returns the sum of two values." },
+        { "name": "sub", "permission": null, "description": "Returns the difference of two values." },
+        { "name": "mul", "permission": null, "description": "Returns the product of two values." },
+        { "name": "div", "permission": null, "description": "Returns the quotient of two values." },
+        { "name": "mod", "permission": null, "description": "Returns the remainder of two values." },
+        { "name": "inc", "permission": null, "description": "Increments a numeric variable by 1." },
+        { "name": "dec", "permission": null, "description": "Decrements a numeric variable by 1." },
+        { "name": "strcmp", "permission": null, "description": "Compares two strings; returns 0 if equal, negative/positive otherwise." },
+        { "name": "strlen", "permission": null, "description": "Returns the length of a string." },
+        { "name": "charat", "permission": null, "description": "Returns the character at a given index in a string." },
+        { "name": "concat", "permission": null, "description": "Concatenates two or more strings." },
+        { "name": "chr", "permission": null, "description": "Returns the character for a given ASCII code." },
+        { "name": "toString", "permission": null, "description": "Converts a value to its string representation." },
+        { "name": "round", "permission": null, "description": "Rounds a floating-point value to the nearest integer." },
+        { "name": "getbyte", "permission": null, "description": "Reads a byte at a given index from a byte array." },
+        { "name": "setbyte", "permission": null, "description": "Writes a byte at a given index in a byte array." }
+    ],
+    "events": [ ]
+}

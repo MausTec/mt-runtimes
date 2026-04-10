@@ -1,23 +1,23 @@
 {
     "products": {
         "edge-o-matic": {
-            "skus": [
-                "EOM3K"
-            ],
-            "versions": [
-                {
-                    "version": "2.0.1",
-                    "status": "current",
-                    "fingerprint": "e7312b5a39bfd3f21438f1a209206880440022aa52c34ed7a00b844e2e554b8f"
+            "skus": {
+                "EOM3K": {
+                    "versions": [
+                        {
+                            "version": "2.0.1",
+                            "status": "current",
+                            "fingerprint": "e7312b5a39bfd3f21438f1a209206880440022aa52c34ed7a00b844e2e554b8f"
+                        }
+                    ]
                 }
-            ]
+            }
         },
         "mercury": {
-            "skus": [
-                "M1K",
-                "TRMCTL"
-            ],
-            "versions": []
+            "skus": {
+                "M1K": { "versions": [ ] },
+                "TRMCTL": { "versions": [ ] }
+            }
         }
     }
 }
