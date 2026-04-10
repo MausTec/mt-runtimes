@@ -11,8 +11,7 @@
     },
     "files": [
         "dist",
-        "edge-o-matic",
-        "mercury",
+        "api",
         "catalog.json"
     ],
     "scripts": {

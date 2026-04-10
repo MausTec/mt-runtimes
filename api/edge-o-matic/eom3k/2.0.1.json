@@ -1,0 +1,85 @@
+{
+    "$schema": "https://schemas.maus-tec.com/plugin-api/v1.0.0/plugin-api.json",
+    "sku": "EOM3K",
+    "version": "2.0.1",
+    "functions": [
+        {
+            "name": "bleWrite",
+            "permission": "ble:write"
+        },
+        {
+            "name": "bleWriteNoResponse",
+            "permission": "ble:write"
+        },
+        {
+            "name": "getSystemConfig",
+            "permission": "syscfg:read"
+        },
+        {
+            "name": "setSystemConfig",
+            "permission": "syscfg:write"
+        },
+        {
+            "name": "getPluginConfig",
+            "permission": null
+        },
+        {
+            "name": "setPluginConfig",
+            "permission": null
+        },
+        {
+            "name": "delay",
+            "permission": null
+        },
+        {
+            "name": "log",
+            "permission": null
+        },
+        {
+            "name": "random",
+            "permission": null
+        },
+        {
+            "name": "millis",
+            "permission": null
+        }
+    ],
+    "events": [
+        {
+            "name": "modeSet",
+            "permission": null
+        },
+        {
+            "name": "speedChange",
+            "permission": null
+        },
+        {
+            "name": "arousalChange",
+            "permission": "arousal:read"
+        },
+        {
+            "name": "orgasmDenial",
+            "permission": "arousal:read"
+        },
+        {
+            "name": "edgeStart",
+            "permission": "arousal:read"
+        },
+        {
+            "name": "orgasmStart",
+            "permission": "arousal:read"
+        },
+        {
+            "name": "connect",
+            "permission": null
+        },
+        {
+            "name": "disconnect",
+            "permission": null
+        },
+        {
+            "name": "tick",
+            "permission": null
+        }
+    ]
+}
