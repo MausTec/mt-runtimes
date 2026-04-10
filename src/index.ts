@@ -11,6 +11,7 @@ export type {
   ApiDescriptor,
   EventDescriptor,
   HostFunctionDescriptor,
+  ReturnDescriptor,
   VersionEntry,
   PayloadField,
   ArgDescriptor,
