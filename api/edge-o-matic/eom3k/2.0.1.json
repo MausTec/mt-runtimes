@@ -1,5 +1,6 @@
 {
-  "$schema": "https://schemas.maus-tec.com/plugin-api/v1.2.0/plugin-api.json",
+  "$schema": "../../../schema/plugin-api.json",
+  "product": "edge-o-matic",
   "sku": "EOM3K",
   "version": "2.0.1",
   "functions": [

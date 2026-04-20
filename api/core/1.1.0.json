@@ -1,6 +1,6 @@
 {
-    "$schema": "https://schemas.maus-tec.com/plugin-api/v1.2.0/plugin-api.json",
-    "sku": "CORE",
+    "$schema": "../../schema/plugin-api.json",
+    "product": "core",
     "version": "1.1.0",
     "functions": [
         {

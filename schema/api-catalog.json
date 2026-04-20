@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://schemas.maus-tec.com/plugin-api/v1.3.0/api-catalog.json",
+    "title": "API Catalog",
+    "description": "Root version catalog for all product API descriptors, including core runtime, product-level, and per-SKU versions.",
+    "type": "object",
+    "required": [ "core", "products" ],
+    "properties": {
+        "$schema": { "type": "string" },
+        "core": {
+            "type": "object",
+            "description": "Core runtime (mt-actions builtins) version catalog.",
+            "required": [ "versions" ],
+            "properties": {
+                "versions": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/versionEntry" }
+                }
+            },
+            "additionalProperties": false
+        },
+        "products": {
+            "type": "object",
+            "description": "Per-product catalogs keyed by product identifier.",
+            "additionalProperties": { "$ref": "#/$defs/productCatalog" }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "productCatalog": {
+            "type": "object",
+            "description": "Version catalog for a single product, including product-level and per-SKU versions.",
+            "required": [ "versions", "skus" ],
+            "properties": {
+                "versions": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/versionEntry" }
+                },
+                "skus": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "required": [ "versions" ],
+                        "properties": {
+                            "versions": {
+                                "type": "array",
+                                "items": { "$ref": "#/$defs/versionEntry" }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "versionEntry": {
+            "type": "object",
+            "required": [ "version", "status" ],
+            "properties": {
+                "version": {
+                    "type": "string",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+                },
+                "status": {
+                    "enum": [ "current", "supported", "eol" ]
+                },
+                "fingerprint": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$",
+                    "description": "SHA-256 hash of the API descriptor file contents."
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
