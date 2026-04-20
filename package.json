@@ -12,7 +12,9 @@
     "files": [
         "dist",
         "api",
-        "catalog.json"
+        "wasm",
+        "catalog.json",
+        "aliases.json"
     ],
     "scripts": {
         "build": "tsc",
