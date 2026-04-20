@@ -4,7 +4,7 @@
   "version": "2.0.1",
   "functions": [
     {
-      "name": "bleWrite",
+      "name": "ble_write",
       "module": "ble",
       "permission": "ble:write",
       "description": "Write data to a BLE GATT characteristic (with response).",
@@ -27,7 +27,7 @@
       }
     },
     {
-      "name": "bleWriteNoResponse",
+      "name": "ble_write_no_response",
       "module": "ble",
       "permission": "ble:write",
       "description": "Write data to a BLE GATT characteristic (without response).",
@@ -50,7 +50,7 @@
       }
     },
     {
-      "name": "getSystemConfig",
+      "name": "get_system_config",
       "module": "config",
       "permission": "syscfg:read",
       "description": "Read a system configuration value by key.",
@@ -67,7 +67,7 @@
       }
     },
     {
-      "name": "setSystemConfig",
+      "name": "set_system_config",
       "module": "config",
       "permission": "syscfg:write",
       "description": "Write a system configuration value by key.",
@@ -89,7 +89,7 @@
       }
     },
     {
-      "name": "getPluginConfig",
+      "name": "get_plugin_config",
       "module": "config",
       "permission": null,
       "description": "Read a value from the calling plugin's own configuration.",
@@ -112,7 +112,7 @@
       }
     },
     {
-      "name": "setPluginConfig",
+      "name": "set_plugin_config",
       "module": "config",
       "permission": null,
       "description": "Write a value to the calling plugin's own configuration.",
@@ -196,13 +196,13 @@
   ],
   "events": [
     {
-      "name": "modeSet",
+      "name": "mode_set",
       "module": "system",
       "permission": null,
       "description": "Fires when the active operating mode changes."
     },
     {
-      "name": "speedChange",
+      "name": "speed_change",
       "module": "system",
       "permission": null,
       "description": "Fires when the motor speed changes.",
@@ -215,7 +215,7 @@
       ]
     },
     {
-      "name": "arousalChange",
+      "name": "arousal_change",
       "module": "arousal",
       "permission": "arousal:read",
       "description": "Fires when the arousal level changes.",
@@ -228,7 +228,7 @@
       ]
     },
     {
-      "name": "orgasmDenial",
+      "name": "orgasm_denial",
       "module": "arousal",
       "permission": "arousal:read",
       "description": "Fires when an orgasm is denied (edge detected).",
@@ -241,13 +241,13 @@
       ]
     },
     {
-      "name": "edgeStart",
+      "name": "edge_start",
       "module": "arousal",
       "permission": "arousal:read",
       "description": "Fires when edging starts (near-orgasm detection begins)."
     },
     {
-      "name": "orgasmStart",
+      "name": "orgasm_start",
       "module": "arousal",
       "permission": "arousal:read",
       "description": "Fires when an orgasm begins."
