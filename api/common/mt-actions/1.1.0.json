@@ -1,8 +1,7 @@
 {
-    "$schema": "https://schemas.maus-tec.com/plugin-api/v1.0.0/plugin-api.json",
-    "sku": "mt-actions",
+    "$schema": "https://schemas.maus-tec.com/plugin-api/v1.2.0/plugin-api.json",
+    "sku": "CORE",
     "version": "1.1.0",
-    "description": "Core language builtins registered by mta_init_builtins(). Available on all platforms that ship mt-actions 1.1.0+.",
     "functions": [
         {
             "name": "eq",
@@ -176,8 +175,7 @@
                 { "name": "a", "type": "string", "description": "First value to concatenate" },
                 { "name": "b", "type": "string", "description": "Second value to concatenate" }
             ],
-            "returns": { "type": "string", "description": "Concatenated string" },
-            "variadic": true
+            "returns": { "type": "string", "description": "Concatenated string" }
         },
         {
             "name": "chr",
