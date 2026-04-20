@@ -13,8 +13,7 @@
         "dist",
         "api",
         "wasm",
-        "catalog.json",
-        "aliases.json"
+        "schema"
     ],
     "scripts": {
         "build": "tsc",

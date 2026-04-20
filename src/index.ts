@@ -15,7 +15,32 @@ export type {
   VersionEntry,
   PayloadField,
   ArgDescriptor,
+  AliasTable,
+  PlatformAlias,
+  ParsedPlatformEntry,
+  ResolvedPlatformInfo,
+  RuntimeBundle,
 } from "./types.js";
+
+export {
+  resolveRuntimeBundle,
+  resolveAlias,
+  allAliases,
+  parsePlatformEntry,
+  intersectApis,
+  ResolutionError,
+} from "./resolver.js";
+export type { ResolveOptions } from "./resolver.js";
+
+export {
+  parseVersion,
+  parseConstraint,
+  matchesConstraint,
+  resolveVersion,
+  satisfies,
+  compareSemVer,
+} from "./version.js";
+export type { SemVer, ParsedConstraint } from "./version.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(__dirname, "..");
@@ -24,21 +49,47 @@ let _catalog: RootCatalog | undefined;
 
 function loadCatalog(): RootCatalog {
   if (_catalog) return _catalog;
-  const raw = readFileSync(resolve(packageRoot, "catalog.json"), "utf-8");
+  const raw = readFileSync(resolve(packageRoot, "api", "catalog.json"), "utf-8");
   _catalog = JSON.parse(raw) as RootCatalog;
   return _catalog;
 }
 
 function productForSku(sku: string): string | undefined {
   const catalog = loadCatalog();
+  const skuLower = sku.toLowerCase();
   for (const [product, entry] of Object.entries(catalog.products)) {
-    if (sku in entry.skus) return product;
+    for (const key of Object.keys(entry.skus)) {
+      if (key.toLowerCase() === skuLower) return product;
+    }
+  }
+  return undefined;
+}
+
+/** Resolve the canonical SKU key (preserving catalog casing) from any casing. */
+function canonicalSku(sku: string): string | undefined {
+  const catalog = loadCatalog();
+  const skuLower = sku.toLowerCase();
+  for (const entry of Object.values(catalog.products)) {
+    for (const key of Object.keys(entry.skus)) {
+      if (key.toLowerCase() === skuLower) return key;
+    }
+  }
+  return undefined;
+}
+
+/** Resolve the canonical product key (preserving catalog casing) from any casing. */
+function canonicalProduct(product: string): string | undefined {
+  const catalog = loadCatalog();
+  const lower = product.toLowerCase();
+  for (const key of Object.keys(catalog.products)) {
+    if (key.toLowerCase() === lower) return key;
   }
   return undefined;
 }
 
 /**
  * Resolve a SKU to its product directory name.
+ * Lookup is case-insensitive.
  */
 export function resolveProduct(sku: string): string {
   const product = productForSku(sku);
@@ -48,14 +99,16 @@ export function resolveProduct(sku: string): string {
 
 /**
  * Get the product catalog for a given SKU or product name.
+ * Lookup is case-insensitive for both product names and SKUs.
  */
 export function getProductCatalog(skuOrProduct: string): ProductCatalog {
   const catalog = loadCatalog();
 
-  if (skuOrProduct in catalog.products) {
-    return catalog.products[skuOrProduct]!;
-  }
+  // Try as product name (case-insensitive)
+  const prodKey = canonicalProduct(skuOrProduct);
+  if (prodKey) return catalog.products[prodKey]!;
 
+  // Try as SKU (case-insensitive)
   const product = productForSku(skuOrProduct);
   if (product) return catalog.products[product]!;
 
@@ -64,11 +117,13 @@ export function getProductCatalog(skuOrProduct: string): ProductCatalog {
 
 /**
  * Get the SkuEntry (version list) for a specific SKU.
+ * Lookup is case-insensitive.
  */
 export function getSkuEntry(sku: string): SkuEntry {
   const product = productForSku(sku);
   if (!product) throw new Error(`Unknown SKU: ${sku}`);
-  return loadCatalog().products[product]!.skus[sku]!;
+  const canon = canonicalSku(sku)!;
+  return loadCatalog().products[product]!.skus[canon]!;
 }
 
 /**
@@ -119,23 +174,34 @@ export function allProducts(): string[] {
 }
 
 // ---------------------------------------------------------------------------
-// Common mt-actions language builtins descriptor
+// WASM runtime paths
 // ---------------------------------------------------------------------------
 
-let _mtActionsEntry: SkuEntry | undefined;
+/**
+ * Resolve the absolute path to the mt-actions WASM binary.
+ * The returned path is suitable for passing to `createRuntime({ wasm: ... })`.
+ */
+export function getWasmPath(): string {
+  return resolve(packageRoot, "wasm", "mt-actions-core.wasm");
+}
 
-function loadMtActionsEntry(): SkuEntry {
-  if (_mtActionsEntry) return _mtActionsEntry;
-  const raw = readFileSync(
-    resolve(packageRoot, "api", "common", "mt-actions", "catalog.json"),
-    "utf-8",
-  );
-  _mtActionsEntry = JSON.parse(raw) as SkuEntry;
-  return _mtActionsEntry;
+// ---------------------------------------------------------------------------
+// Core runtime builtins descriptor
+// ---------------------------------------------------------------------------
+
+function loadCoreEntry(): SkuEntry {
+  return loadCatalog().core;
 }
 
 /**
- * Load the mt-actions language builtin descriptor.
+ * Get the core runtime version catalog.
+ */
+export function getCoreCatalog(): SkuEntry {
+  return loadCoreEntry();
+}
+
+/**
+ * Load the core runtime builtin descriptor.
  * Contains all functions registered by mta_init_builtins() — available on
  * every platform that ships mt-actions 1.1.0+.
  *
@@ -143,9 +209,9 @@ function loadMtActionsEntry(): SkuEntry {
  * load the current (latest stable) version.
  */
 export function getMtActionsDescriptor(version?: string): ApiDescriptor {
-  const entry = loadMtActionsEntry();
+  const entry = loadCoreEntry();
   if (entry.versions.length === 0) {
-    throw new Error("No mt-actions versions available");
+    throw new Error("No core runtime versions available");
   }
 
   let targetVersion = version;
@@ -156,11 +222,11 @@ export function getMtActionsDescriptor(version?: string): ApiDescriptor {
     targetVersion = (current as VersionEntry).version;
   }
 
-  const descPath = resolve(packageRoot, "api", "common", "mt-actions", `${targetVersion}.json`);
+  const descPath = resolve(packageRoot, "api", "core", `${targetVersion}.json`);
   try {
     return JSON.parse(readFileSync(descPath, "utf-8")) as ApiDescriptor;
   } catch {
-    throw new Error(`mt-actions descriptor not found for version ${targetVersion}`);
+    throw new Error(`Core runtime descriptor not found for version ${targetVersion}`);
   }
 }
 
