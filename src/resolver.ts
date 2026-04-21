@@ -4,10 +4,6 @@
  * Resolves @sdk_version and @platforms metadata into a concrete RuntimeBundle
  * that the linker can validate against.
  */
-import { readFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-
 import type {
   AliasTable,
   ApiDescriptor,
@@ -20,10 +16,7 @@ import type {
   VersionEntry,
 } from "./types.js";
 import { resolveVersion } from "./version.js";
-import { getApiDescriptor, getSkuEntry, getMtActionsDescriptor, getProductCatalog, getCoreCatalog } from "./index.js";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const packageRoot = resolve(__dirname, "..");
+import { getApiDescriptor, getSkuEntry, getMtActionsDescriptor, getProductCatalog, getCoreCatalog, loadApiFile } from "./index.js";
 
 // ---------------------------------------------------------------------------
 // Alias table loading
@@ -33,8 +26,7 @@ let _aliases: AliasTable | undefined;
 
 function loadAliases(): AliasTable {
   if (_aliases) return _aliases;
-  const raw = readFileSync(resolve(packageRoot, "api", "aliases.json"), "utf-8");
-  _aliases = JSON.parse(raw) as AliasTable;
+  _aliases = loadApiFile("aliases.json") as AliasTable;
   return _aliases;
 }
 
@@ -59,13 +51,7 @@ export function allAliases(): string[] {
 // ---------------------------------------------------------------------------
 
 function loadProductApiDescriptor(product: string, version: string): ApiDescriptor {
-  const descPath = resolve(packageRoot, "api", product, `${version}.json`);
-
-  try {
-    return JSON.parse(readFileSync(descPath, "utf-8")) as ApiDescriptor;
-  } catch {
-    throw new Error(`Product API descriptor not found: ${product} v${version}`);
-  }
+  return loadApiFile(`${product}/${version}.json`) as ApiDescriptor;
 }
 
 // ---------------------------------------------------------------------------

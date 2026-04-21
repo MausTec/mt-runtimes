@@ -3,6 +3,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { RootCatalog, ProductCatalog, ApiDescriptor, SkuEntry, VersionEntry } from "./types.js";
+import { apiBundle } from "./generated/api-bundle.js";
 
 export type {
   RootCatalog,
@@ -42,15 +43,56 @@ export {
 } from "./version.js";
 export type { SemVer, ParsedConstraint } from "./version.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const packageRoot = resolve(__dirname, "..");
+// ---------------------------------------------------------------------------
+// Bundle-backed file loader
+// ---------------------------------------------------------------------------
+
+// Only evaluated if the bundle misses a file (Node.js fallback).
+// Kept in a function so `fileURLToPath(import.meta.url)` is never executed at
+// module load time, which would crash when bundled as CJS (import.meta.url -> undefined).
+let _packageRoot: string | undefined;
+
+function getPackageRoot(): string {
+  if (_packageRoot) return _packageRoot;
+
+  if (typeof import.meta.url === "undefined") {
+    throw new Error(
+      "Filesystem fallback unavailable in bundled environments. " +
+        "Regenerate the API bundle with `npm run codegen`.",
+    );
+  }
+
+  _packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  return _packageRoot;
+}
+
+/**
+ * Load an api/ file by path relative to the api/ directory.
+ * Primary: statically-bundled data (works everywhere, including browsers).
+ * Fallback: readFileSync for files added to disk before the next codegen run.
+ * @internal Used by resolver.ts; not part of the public API.
+ */
+export function loadApiFile(relPath: string): unknown {
+  if (Object.prototype.hasOwnProperty.call(apiBundle, relPath)) {
+    return apiBundle[relPath];
+  }
+
+  try {
+    return JSON.parse(readFileSync(resolve(getPackageRoot(), "api", relPath), "utf-8"));
+  } catch {
+    throw new Error(`API file not found in bundle or on disk: ${relPath}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Catalog access
+// ---------------------------------------------------------------------------
 
 let _catalog: RootCatalog | undefined;
 
 function loadCatalog(): RootCatalog {
   if (_catalog) return _catalog;
-  const raw = readFileSync(resolve(packageRoot, "api", "catalog.json"), "utf-8");
-  _catalog = JSON.parse(raw) as RootCatalog;
+  _catalog = loadApiFile("catalog.json") as RootCatalog;
   return _catalog;
 }
 
@@ -133,15 +175,7 @@ export function getSkuEntry(sku: string): SkuEntry {
 export function getApiDescriptor(sku: string, version: string): ApiDescriptor {
   const product = productForSku(sku);
   if (!product) throw new Error(`Unknown SKU: ${sku}`);
-
-  const apiPath = resolve(packageRoot, "api", product, sku.toLowerCase(), `${version}.json`);
-
-  try {
-    const raw = readFileSync(apiPath, "utf-8");
-    return JSON.parse(raw) as ApiDescriptor;
-  } catch {
-    throw new Error(`API descriptor not found for ${sku} v${version}`);
-  }
+  return loadApiFile(`${product}/${sku.toLowerCase()}/${version}.json`) as ApiDescriptor;
 }
 
 /**
@@ -182,7 +216,7 @@ export function allProducts(): string[] {
  * The returned path is suitable for passing to `createRuntime({ wasm: ... })`.
  */
 export function getWasmPath(): string {
-  return resolve(packageRoot, "wasm", "mt-actions-core.wasm");
+  return resolve(getPackageRoot(), "wasm", "mt-actions-core.wasm");
 }
 
 // ---------------------------------------------------------------------------
@@ -222,11 +256,5 @@ export function getMtActionsDescriptor(version?: string): ApiDescriptor {
     targetVersion = (current as VersionEntry).version;
   }
 
-  const descPath = resolve(packageRoot, "api", "core", `${targetVersion}.json`);
-  try {
-    return JSON.parse(readFileSync(descPath, "utf-8")) as ApiDescriptor;
-  } catch {
-    throw new Error(`Core runtime descriptor not found for version ${targetVersion}`);
-  }
+  return loadApiFile(`core/${targetVersion}.json`) as ApiDescriptor;
 }
-
