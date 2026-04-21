@@ -33,8 +33,13 @@
                     "versions": [
                         {
                             "version": "2.0.1",
-                            "status": "current",
+                            "status": "supported",
                             "fingerprint": "78f2edfb87f4e7b62161a3446ba3fd4fba726a4183e85bc5b6f22bcc600cdce9"
+                        },
+                        {
+                            "version": "2.0.2",
+                            "status": "current",
+                            "fingerprint": "8c0f4235337db8f9fde6268667429793db48ff2a0b871622bebea0f90e7378f3"
                         }
                     ]
                 }
