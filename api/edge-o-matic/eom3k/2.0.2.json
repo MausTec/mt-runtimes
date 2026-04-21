@@ -1,0 +1,275 @@
+{
+  "$schema": "https://schemas.maus-tec.com/plugin-api/v1.3.0/plugin-api.json",
+  "product": "edge-o-matic",
+  "version": "2.0.2",
+  "functions": [
+    {
+      "name": "ble_write",
+      "module": "ble",
+      "permission": "ble:write",
+      "description": "Write data to a BLE GATT characteristic (with response).",
+      "args": [
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Data to send to the peripheral (string or byte array)"
+        },
+        {
+          "name": "len",
+          "type": "int",
+          "optional": true,
+          "description": "Maximum number of bytes to write (optional)"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 on success, -1 on failure"
+      }
+    },
+    {
+      "name": "ble_write_no_response",
+      "module": "ble",
+      "permission": "ble:write",
+      "description": "Write data to a BLE GATT characteristic (without response).",
+      "args": [
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Data to send to the peripheral (string or byte array)"
+        },
+        {
+          "name": "len",
+          "type": "int",
+          "optional": true,
+          "description": "Maximum number of bytes to write (optional)"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 on success, -1 on failure"
+      }
+    },
+    {
+      "name": "get_system_config",
+      "module": "config",
+      "permission": "syscfg:read",
+      "description": "Read a system configuration value by key. @TODO This should return typed values.",
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Configuration key path"
+        }
+      ],
+      "returns": {
+        "type": "string",
+        "description": "Configuration value as string"
+      }
+    },
+    {
+      "name": "set_system_config",
+      "module": "config",
+      "permission": "syscfg:write",
+      "description": "Write a system configuration value by key.",
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Configuration key path"
+        },
+        {
+          "name": "value",
+          "type": "any",
+          "description": "New value to set"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "1 if reboot required, 0 otherwise"
+      }
+    },
+    {
+      "name": "get_plugin_config",
+      "module": "config",
+      "permission": null,
+      "description": "Read a value from the calling plugin's own configuration.",
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Configuration key name"
+        },
+        {
+          "name": "default",
+          "type": "any",
+          "optional": true,
+          "description": "Default value if key not found (optional)"
+        }
+      ],
+      "returns": {
+        "type": "any",
+        "description": "Configuration value (type depends on stored value)"
+      }
+    },
+    {
+      "name": "set_plugin_config",
+      "module": "config",
+      "permission": null,
+      "description": "Write a value to the calling plugin's own configuration.",
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Configuration key name"
+        },
+        {
+          "name": "value",
+          "type": "any",
+          "description": "Value to set (int, float, or string)"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 on success"
+      }
+    },
+    {
+      "name": "delay",
+      "module": "system",
+      "permission": null,
+      "description": "Pause plugin execution for a given number of milliseconds.",
+      "args": [
+        {
+          "name": "ms",
+          "type": "int",
+          "description": "Delay duration in milliseconds"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "module": "system",
+      "permission": null,
+      "description": "Log a message to the device console. Accepts a string or integer argument. The plugin name is prepended for identification.",
+      "args": [
+        {
+          "name": "msg",
+          "type": "any",
+          "description": "Message or integer value to log"
+        }
+      ]
+    },
+    {
+      "name": "random",
+      "module": "system",
+      "permission": null,
+      "description": "Generate a random integer using the hardware RNG. With 0 args returns a raw uint32. With 1 arg returns [0, arg). With 2 args returns [arg0, arg1].",
+      "args": [
+        {
+          "name": "min",
+          "type": "int",
+          "optional": true,
+          "description": "Lower bound (or upper bound if only one arg) (optional)"
+        },
+        {
+          "name": "max",
+          "type": "int",
+          "optional": true,
+          "description": "Upper bound (optional)"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Random integer in the specified range"
+      }
+    },
+    {
+      "name": "millis",
+      "module": "system",
+      "permission": null,
+      "description": "Get milliseconds elapsed since device boot. Uses esp_timer_get_time() (microseconds) divided by 1000.",
+      "returns": {
+        "type": "int",
+        "description": "Milliseconds since boot"
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "mode_set",
+      "module": "system",
+      "permission": null,
+      "description": "Fires when the active operating mode changes."
+    },
+    {
+      "name": "speed_change",
+      "module": "system",
+      "permission": null,
+      "description": "Fires when the motor speed changes.",
+      "payload": [
+        {
+          "name": "speed",
+          "type": "int",
+          "description": "New speed value (0-255)"
+        }
+      ]
+    },
+    {
+      "name": "arousal_change",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Fires when the arousal level changes.",
+      "payload": [
+        {
+          "name": "level",
+          "type": "int",
+          "description": "Current arousal percentage (0-100)"
+        }
+      ]
+    },
+    {
+      "name": "orgasm_denial",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Fires when an orgasm is denied (edge detected).",
+      "payload": [
+        {
+          "name": "level",
+          "type": "int",
+          "description": "Arousal level at denial"
+        }
+      ]
+    },
+    {
+      "name": "edge_start",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Fires when edging starts (near-orgasm detection begins)."
+    },
+    {
+      "name": "orgasm_start",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Fires when an orgasm begins."
+    },
+    {
+      "name": "connect",
+      "module": "ble",
+      "permission": null,
+      "description": "Fires when a BLE peripheral connects."
+    },
+    {
+      "name": "disconnect",
+      "module": "ble",
+      "permission": null,
+      "description": "Fires when a BLE peripheral disconnects."
+    },
+    {
+      "name": "tick",
+      "module": "system",
+      "permission": null,
+      "description": "Fires on each main loop tick (periodic heartbeat)."
+    }
+  ],
+  "sku": "EOM3K"
+}
