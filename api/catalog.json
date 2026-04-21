@@ -4,8 +4,13 @@
         "versions": [
             {
                 "version": "1.1.0",
-                "status": "current",
+                "status": "supported",
                 "fingerprint": "ab5c9e327144858d48ebb5ab001d76ed5953f4c762031c97b5f242008135b1a3"
+            },
+            {
+                "version": "1.1.0",
+                "status": "current",
+                "fingerprint": "8d0df7e3b3fd2c199e724f817d987ad926d0a6f8df8166e92041f2236fac6aa9"
             }
         ]
     },
@@ -36,10 +41,14 @@
             }
         },
         "mercury": {
-            "versions": [ ],
+            "versions": [],
             "skus": {
-                "M1K": { "versions": [ ] },
-                "TRMCTL": { "versions": [ ] }
+                "M1K": {
+                    "versions": []
+                },
+                "TRMCTL": {
+                    "versions": []
+                }
             }
         }
     }

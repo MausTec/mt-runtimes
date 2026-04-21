@@ -1,229 +1,511 @@
 {
-    "$schema": "../../schema/plugin-api.json",
-    "product": "core",
-    "version": "1.1.0",
-    "functions": [
+  "$schema": "https://schemas.maus-tec.com/plugin-api/v1.3.0/plugin-api.json",
+  "product": "core",
+  "version": "1.1.0",
+  "functions": [
+    {
+      "name": "eq",
+      "module": "compare",
+      "permission": null,
+      "description": "Compare two numbers for equality. Float-aware: if either operand is a float, both are compared as floats; otherwise compared as integers.",
+      "args": [
         {
-            "name": "eq",
-            "permission": null,
-            "description": "Returns true if two values are equal. Float-aware: if either argument is a float, both are compared as floats.",
-            "args": [
-                { "name": "a", "type": "int", "description": "First value to compare" },
-                { "name": "b", "type": "int", "description": "Second value to compare" }
-            ],
-            "returns": { "type": "bool", "description": "True if a == b" }
+          "name": "a",
+          "type": "number",
+          "description": "Left operand"
         },
         {
-            "name": "neq",
-            "permission": null,
-            "description": "Returns true if two values are not equal.",
-            "args": [
-                { "name": "a", "type": "int", "description": "First value to compare" },
-                { "name": "b", "type": "int", "description": "Second value to compare" }
-            ],
-            "returns": { "type": "bool", "description": "True if a != b" }
-        },
-        {
-            "name": "gt",
-            "permission": null,
-            "description": "Returns true if the first value is greater than the second.",
-            "args": [
-                { "name": "a", "type": "int", "description": "First value" },
-                { "name": "b", "type": "int", "description": "Second value" }
-            ],
-            "returns": { "type": "bool", "description": "True if a > b" }
-        },
-        {
-            "name": "lt",
-            "permission": null,
-            "description": "Returns true if the first value is less than the second. Float-aware.",
-            "args": [
-                { "name": "a", "type": "int", "description": "First value" },
-                { "name": "b", "type": "int", "description": "Second value" }
-            ],
-            "returns": { "type": "bool", "description": "True if a < b" }
-        },
-        {
-            "name": "gte",
-            "permission": null,
-            "description": "Returns true if the first value is greater than or equal to the second.",
-            "args": [
-                { "name": "a", "type": "int", "description": "First value" },
-                { "name": "b", "type": "int", "description": "Second value" }
-            ],
-            "returns": { "type": "bool", "description": "True if a >= b" }
-        },
-        {
-            "name": "lte",
-            "permission": null,
-            "description": "Returns true if the first value is less than or equal to the second.",
-            "args": [
-                { "name": "a", "type": "int", "description": "First value" },
-                { "name": "b", "type": "int", "description": "Second value" }
-            ],
-            "returns": { "type": "bool", "description": "True if a <= b" }
-        },
-        {
-            "name": "set",
-            "permission": null,
-            "description": "Assigns one or more variables. Used internally by the compiler for assignment statements. Full form: {var, value}. Shorthand: {key: val, ...}.",
-            "args": [
-                { "name": "var", "type": "string", "description": "Variable reference to assign" },
-                { "name": "value", "type": "int", "description": "Value to assign" }
-            ]
-        },
-        {
-            "name": "add",
-            "permission": null,
-            "description": "Returns the sum of two values. Float-aware: if either argument is a float, the result is a float.",
-            "args": [
-                { "name": "a", "type": "int", "description": "First operand" },
-                { "name": "b", "type": "int", "description": "Second operand" }
-            ],
-            "returns": { "type": "int", "description": "a + b" }
-        },
-        {
-            "name": "sub",
-            "permission": null,
-            "description": "Returns the difference of two values. Float-aware.",
-            "args": [
-                { "name": "a", "type": "int", "description": "First operand" },
-                { "name": "b", "type": "int", "description": "Second operand" }
-            ],
-            "returns": { "type": "int", "description": "a - b" }
-        },
-        {
-            "name": "mul",
-            "permission": null,
-            "description": "Returns the product of two values. Float-aware.",
-            "args": [
-                { "name": "a", "type": "int", "description": "First operand" },
-                { "name": "b", "type": "int", "description": "Second operand" }
-            ],
-            "returns": { "type": "int", "description": "a * b" }
-        },
-        {
-            "name": "div",
-            "permission": null,
-            "description": "Returns the quotient of two values. Float-aware. Sets $! to MTA_ERR_DIV_ZERO on division by zero.",
-            "args": [
-                { "name": "a", "type": "int", "description": "Dividend" },
-                { "name": "b", "type": "int", "description": "Divisor" }
-            ],
-            "returns": { "type": "int", "description": "a / b" }
-        },
-        {
-            "name": "mod",
-            "permission": null,
-            "description": "Returns the integer remainder of two values. Sets $! on division by zero.",
-            "args": [
-                { "name": "a", "type": "int", "description": "Dividend" },
-                { "name": "b", "type": "int", "description": "Divisor" }
-            ],
-            "returns": { "type": "int", "description": "a % b" }
-        },
-        {
-            "name": "inc",
-            "permission": null,
-            "description": "Increments a numeric variable by 1. Creates the variable with value 1 if it does not exist.",
-            "args": [
-                { "name": "var", "type": "string", "description": "Variable reference to increment" }
-            ]
-        },
-        {
-            "name": "dec",
-            "permission": null,
-            "description": "Decrements a numeric variable by 1. Creates the variable with value -1 if it does not exist.",
-            "args": [
-                { "name": "var", "type": "string", "description": "Variable reference to decrement" }
-            ]
-        },
-        {
-            "name": "strcmp",
-            "permission": null,
-            "description": "Compares two strings lexicographically. Result is stored in $_: 0 if equal, negative if a < b, positive if a > b.",
-            "args": [
-                { "name": "a", "type": "string", "description": "First string" },
-                { "name": "b", "type": "string", "description": "Second string" }
-            ],
-            "returns": { "type": "int", "description": "0 if equal, negative if a < b, positive if a > b" }
-        },
-        {
-            "name": "strlen",
-            "permission": null,
-            "description": "Returns the length of a string.",
-            "args": [
-                { "name": "str", "type": "string", "description": "String to measure" }
-            ],
-            "returns": { "type": "int", "description": "Number of characters in the string" }
-        },
-        {
-            "name": "charat",
-            "permission": null,
-            "description": "Returns the character at a given index in a string as a single-character string. Returns empty string if index is out of bounds.",
-            "args": [
-                { "name": "str", "type": "string", "description": "Source string" },
-                { "name": "index", "type": "int", "description": "Zero-based character index" }
-            ],
-            "returns": { "type": "string", "description": "Single-character string at the given index" }
-        },
-        {
-            "name": "concat",
-            "permission": null,
-            "description": "Concatenates two or more values into a single string. Accepts any number of arguments. Maximum result length is 256 characters.",
-            "args": [
-                { "name": "a", "type": "string", "description": "First value to concatenate" },
-                { "name": "b", "type": "string", "description": "Second value to concatenate" }
-            ],
-            "returns": { "type": "string", "description": "Concatenated string" }
-        },
-        {
-            "name": "chr",
-            "permission": null,
-            "description": "Converts an integer ASCII code (0-255) to a single-character string.",
-            "args": [
-                { "name": "code", "type": "int", "description": "ASCII code (0-255)" }
-            ],
-            "returns": { "type": "string", "description": "Single-character string" }
-        },
-        {
-            "name": "to_string",
-            "permission": null,
-            "description": "Converts a value to its string representation. Integers become decimal strings, floats include decimal point.",
-            "args": [
-                { "name": "value", "type": "int", "description": "Value to convert (int, float, or string)" }
-            ],
-            "returns": { "type": "string", "description": "String representation of the value" }
-        },
-        {
-            "name": "round",
-            "permission": null,
-            "description": "Rounds a floating-point value to the nearest integer using banker's rounding.",
-            "args": [
-                { "name": "value", "type": "float", "description": "Floating-point value to round" }
-            ],
-            "returns": { "type": "int", "description": "Rounded integer value" }
-        },
-        {
-            "name": "getbyte",
-            "permission": null,
-            "description": "Reads a byte at a given index from a byte array. Sets $! to MTA_ERR_ARRAY_BOUNDS if index is out of range.",
-            "args": [
-                { "name": "array", "type": "string", "description": "Variable reference to the byte array" },
-                { "name": "index", "type": "int", "description": "Zero-based byte index" }
-            ],
-            "returns": { "type": "int", "description": "Byte value (0-255) at the given index" }
-        },
-        {
-            "name": "setbyte",
-            "permission": null,
-            "description": "Writes a byte at a given index in a byte array. Extends the array if index equals its current size. Sets $! on error.",
-            "args": [
-                { "name": "array", "type": "string", "description": "Variable reference to the byte array" },
-                { "name": "index", "type": "int", "description": "Zero-based byte index" },
-                { "name": "value", "type": "int", "description": "Byte value to write (0-255)" }
-            ]
+          "name": "b",
+          "type": "number",
+          "description": "Right operand"
         }
-    ],
-    "events": [ ]
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 if equal, 1 otherwise"
+      }
+    },
+    {
+      "name": "neq",
+      "module": "compare",
+      "permission": null,
+      "description": "Compare two integers for inequality.",
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "Left operand"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Right operand"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 if not equal, 1 otherwise"
+      }
+    },
+    {
+      "name": "gt",
+      "module": "compare",
+      "permission": null,
+      "description": "Test whether the left operand is strictly greater than the right.",
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "Left operand"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Right operand"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 if a > b, 1 otherwise"
+      }
+    },
+    {
+      "name": "lt",
+      "module": "compare",
+      "permission": null,
+      "description": "Test whether the left operand is strictly less than the right. Float-aware: if either operand resolves to a float both are compared as floats.",
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "Left operand"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Right operand"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 if a < b, 1 otherwise"
+      }
+    },
+    {
+      "name": "gte",
+      "module": "compare",
+      "permission": null,
+      "description": "Test whether the left operand is greater than or equal to the right.",
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "Left operand"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Right operand"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 if a >= b, 1 otherwise"
+      }
+    },
+    {
+      "name": "lte",
+      "module": "compare",
+      "permission": null,
+      "description": "Test whether the left operand is less than or equal to the right.",
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "Left operand"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Right operand"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 if a <= b, 1 otherwise"
+      }
+    },
+    {
+      "name": "set",
+      "module": "control",
+      "permission": null,
+      "description": "Assign a value to one or more variables in the current scope. Supports two calling forms: Full form:     {\"set\": {\"var\": \"$x\", \"value\": 42}} Shorthand:     {\"set\": {\"x\": 42, \"y\": 10}}  (each key is a variable name)",
+      "args": [
+        {
+          "name": "var",
+          "type": "string",
+          "description": "Variable name to assign (with or without leading $)"
+        },
+        {
+          "name": "value",
+          "type": "any",
+          "description": "Value to assign to the variable"
+        }
+      ]
+    },
+    {
+      "name": "add",
+      "module": "math",
+      "permission": null,
+      "description": "Add two numbers and store the result in $_.",
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "First operand"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Second operand"
+        }
+      ],
+      "returns": {
+        "type": "number",
+        "description": "Sum (stored in $_)"
+      }
+    },
+    {
+      "name": "sub",
+      "module": "math",
+      "permission": null,
+      "description": "Subtract one number from another and store the result in $_.",
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "Minuend"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Subtrahend"
+        }
+      ],
+      "returns": {
+        "type": "number",
+        "description": "Difference a - b (stored in $_)"
+      }
+    },
+    {
+      "name": "inc",
+      "module": "math",
+      "permission": null,
+      "description": "Increment a variable in the current scope by 1. The variable is created with value 1 if it does not already exist. Usage: {\"inc\": \"$varName\"}",
+      "args": [
+        {
+          "name": "var",
+          "type": "string",
+          "description": "Variable name to increment (with or without leading $)"
+        }
+      ]
+    },
+    {
+      "name": "dec",
+      "module": "math",
+      "permission": null,
+      "description": "Decrement a variable in the current scope by 1. The variable is created with value -1 if it does not already exist. Usage: {\"dec\": \"$varName\"}",
+      "args": [
+        {
+          "name": "var",
+          "type": "string",
+          "description": "Variable name to decrement (with or without leading $)"
+        }
+      ]
+    },
+    {
+      "name": "strcmp",
+      "module": "string",
+      "permission": null,
+      "description": "Compare two strings using C strcmp semantics. Stores the comparison result in $_ for use with the 'to' mechanism.",
+      "args": [
+        {
+          "name": "a",
+          "type": "string",
+          "description": "First string"
+        },
+        {
+          "name": "b",
+          "type": "string",
+          "description": "Second string"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "0 if equal, negative if a < b, positive if a > b (stored in $_)"
+      }
+    },
+    {
+      "name": "strlen",
+      "module": "string",
+      "permission": null,
+      "description": "Return the byte length of a string and store it in $_.",
+      "args": [
+        {
+          "name": "str",
+          "type": "string",
+          "description": "Input string"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Byte length of the string (stored in $_)"
+      }
+    },
+    {
+      "name": "charat",
+      "module": "string",
+      "permission": null,
+      "description": "Extract a single character from a string at the given index and store it in $_ as a one-character string. Out-of-bounds access stores an empty string.",
+      "args": [
+        {
+          "name": "str",
+          "type": "string",
+          "description": "Input string"
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "description": "Zero-based character index"
+        }
+      ],
+      "returns": {
+        "type": "string",
+        "description": "Single-character string at position index (stored in $_)"
+      }
+    },
+    {
+      "name": "getbyte",
+      "module": "array",
+      "permission": null,
+      "description": "Read a single byte from a byte-array variable at the given index and store the value in $_.  Sets $! to MTA_ERR_UNDEFINED_VAR if the variable is not found, or MTA_ERR_ARRAY_BOUNDS if the index is out of range.",
+      "args": [
+        {
+          "name": "array",
+          "type": "string",
+          "description": "Name of the byte-array variable (with or without leading $)"
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "description": "Zero-based byte offset"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Byte value 0-255 (stored in $_); $! is set on error"
+      }
+    },
+    {
+      "name": "setbyte",
+      "module": "array",
+      "permission": null,
+      "description": "Write a single byte into a byte-array variable at the given index. Sets $! to MTA_ERR_UNDEFINED_VAR if the variable is not found, or MTA_ERR_ARRAY_BOUNDS if the index is out of range.",
+      "args": [
+        {
+          "name": "array",
+          "type": "string",
+          "description": "Name of the byte-array variable (with or without leading $)"
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "description": "Zero-based byte offset"
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "description": "Byte value to write (0-255)"
+        }
+      ]
+    },
+    {
+      "name": "mul",
+      "module": "math",
+      "permission": null,
+      "description": "Multiply two numbers and store the result in $_.  Float-aware: if either operand is a float the result is a float; otherwise an integer.",
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "First factor"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Second factor"
+        }
+      ],
+      "returns": {
+        "type": "number",
+        "description": "Product a * b (stored in $_)"
+      }
+    },
+    {
+      "name": "div",
+      "module": "math",
+      "permission": null,
+      "description": "Divide two numbers and store the result in $_.  Float-aware: if either operand is a float the result is a float; otherwise integer division. On division by zero sets $! to MTA_ERR_DIV_ZERO and stores 0 in $_.",
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "Dividend"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Divisor"
+        }
+      ],
+      "returns": {
+        "type": "number",
+        "description": "Quotient a / b (stored in $_); $! set on division by zero"
+      }
+    },
+    {
+      "name": "mod",
+      "module": "math",
+      "permission": null,
+      "description": "Compute the integer remainder of a divided by b and store it in $_. Sets $! to MTA_ERR_DIV_ZERO and stores 0 in $_ when b is zero.",
+      "args": [
+        {
+          "name": "a",
+          "type": "int",
+          "description": "Dividend"
+        },
+        {
+          "name": "b",
+          "type": "int",
+          "description": "Divisor"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Remainder a % b (stored in $_); $! set on division by zero"
+      }
+    },
+    {
+      "name": "round",
+      "module": "math",
+      "permission": null,
+      "description": "Round a floating-point number to the nearest integer and store it in $_. If the input is already an integer it is passed through unchanged.",
+      "args": [
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Value to round"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Nearest integer (stored in $_)"
+      }
+    },
+    {
+      "name": "chr",
+      "module": "string",
+      "permission": null,
+      "description": "Convert a Latin-1 code point (0-255) to a single-character string and store it in $_.  Values outside 0-255 are mapped to '?'.",
+      "args": [
+        {
+          "name": "code",
+          "type": "int",
+          "description": "Character code 0-255"
+        }
+      ],
+      "returns": {
+        "type": "string",
+        "description": "Single-character string (stored in $_)"
+      }
+    },
+    {
+      "name": "to_string",
+      "module": "string",
+      "permission": null,
+      "description": "Convert a number to its decimal string representation and store it in $_. Integers are formatted without a decimal point; floats use %g notation. If the value is already a string it is passed through unchanged.",
+      "args": [
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Value to convert"
+        }
+      ],
+      "returns": {
+        "type": "string",
+        "description": "Decimal string representation (stored in $_)"
+      }
+    },
+    {
+      "name": "concat",
+      "module": "string",
+      "permission": null,
+      "description": "Concatenate two or more values into a single string and store it in $_. Each argument is converted to a string before joining.  The total result is capped at 255 bytes.",
+      "args": [
+        {
+          "name": "parts",
+          "type": "string",
+          "optional": true,
+          "description": "Values to concatenate"
+        }
+      ],
+      "variadic": true,
+      "returns": {
+        "type": "string",
+        "description": "Joined string (stored in $_)"
+      }
+    },
+    {
+      "name": "get_config",
+      "module": "config",
+      "permission": null,
+      "description": "Read a value from the calling plugin's configuration store and return it in $_.  Returns the default value if the key does not exist, or -1 if no default is provided.  Supports int, bool, and string config types.",
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Config key to read"
+        },
+        {
+          "name": "default",
+          "type": "any",
+          "optional": true,
+          "description": "Default value to return when the key is not set"
+        }
+      ],
+      "returns": {
+        "type": "any",
+        "description": "Config value (stored in $_)"
+      }
+    },
+    {
+      "name": "set_config",
+      "module": "config",
+      "permission": null,
+      "description": "Write a value to the calling plugin's configuration store.  The config type is inferred from the argument (string \u2192 string, float \u2192 int, other \u2192 int). If a config-save handler is registered the config is persisted immediately.",
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Config key to write"
+        },
+        {
+          "name": "value",
+          "type": "any",
+          "description": "Value to store"
+        }
+      ]
+    }
+  ],
+  "events": []
 }
