@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "rootDir": "./src",
+        "rootDir": ".",
         "outDir": "./dist",
 
         "module": "nodenext",
@@ -24,6 +24,6 @@
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true
     },
-    "include": [ "src" ],
+    "include": [ "src", "scripts" ],
     "exclude": [ "node_modules", "dist" ]
 }

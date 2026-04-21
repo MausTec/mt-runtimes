@@ -1,0 +1,152 @@
+{
+    "$schema": "../../schema/plugin-api.json",
+    "product": "edge-o-matic",
+    "version": "2.0.1",
+    "functions": [
+        {
+            "name": "ble_write",
+            "module": "ble",
+            "permission": "ble:write",
+            "description": "Write data to a BLE GATT characteristic (with response).",
+            "args": [
+                { "name": "data", "type": "string", "description": "Data to send to the peripheral" },
+                { "name": "len", "type": "int", "optional": true, "description": "Maximum number of bytes to write" }
+            ],
+            "returns": { "type": "int", "description": "0 on success, -1 on failure" }
+        },
+        {
+            "name": "ble_write_no_response",
+            "module": "ble",
+            "permission": "ble:write",
+            "description": "Write data to a BLE GATT characteristic (without response).",
+            "args": [
+                { "name": "data", "type": "string", "description": "Data to send to the peripheral" },
+                { "name": "len", "type": "int", "optional": true, "description": "Maximum number of bytes to write" }
+            ],
+            "returns": { "type": "int", "description": "0 on success, -1 on failure" }
+        },
+        {
+            "name": "get_plugin_config",
+            "module": "config",
+            "permission": null,
+            "description": "Read a value from the calling plugin's own configuration.",
+            "args": [
+                { "name": "key", "type": "string", "description": "Configuration key name" },
+                { "name": "default", "type": "int", "optional": true, "description": "Default value if key not found" }
+            ],
+            "returns": { "type": "int", "description": "Configuration value" }
+        },
+        {
+            "name": "set_plugin_config",
+            "module": "config",
+            "permission": null,
+            "description": "Write a value to the calling plugin's own configuration.",
+            "args": [
+                { "name": "key", "type": "string", "description": "Configuration key name" },
+                { "name": "value", "type": "int", "description": "Value to set" }
+            ],
+            "returns": { "type": "int", "description": "0 on success" }
+        },
+        {
+            "name": "delay",
+            "module": "system",
+            "permission": null,
+            "description": "Pause plugin execution for a given number of milliseconds.",
+            "args": [
+                { "name": "ms", "type": "int", "description": "Delay duration in milliseconds" }
+            ]
+        },
+        {
+            "name": "log",
+            "module": "system",
+            "permission": null,
+            "description": "Log a message to the device console.",
+            "args": [
+                { "name": "msg", "type": "string", "description": "Message to log" }
+            ]
+        },
+        {
+            "name": "random",
+            "module": "system",
+            "permission": null,
+            "description": "Generate a random integer using the hardware RNG.",
+            "args": [
+                { "name": "min", "type": "int", "optional": true, "description": "Lower bound" },
+                { "name": "max", "type": "int", "optional": true, "description": "Upper bound" }
+            ],
+            "returns": { "type": "int", "description": "Random integer" }
+        },
+        {
+            "name": "millis",
+            "module": "system",
+            "permission": null,
+            "description": "Get milliseconds elapsed since device boot.",
+            "returns": { "type": "int", "description": "Milliseconds since boot" }
+        }
+    ],
+    "events": [
+        {
+            "name": "speed_change",
+            "module": "system",
+            "permission": null,
+            "description": "Fires when the motor speed changes.",
+            "payload": [
+                { "name": "speed", "type": "int", "description": "New speed value (0-255)" }
+            ]
+        },
+        {
+            "name": "arousal_change",
+            "module": "arousal",
+            "permission": "arousal:read",
+            "description": "Fires when the arousal level changes.",
+            "payload": [
+                { "name": "level", "type": "int", "description": "Current arousal percentage (0-100)" }
+            ]
+        },
+        {
+            "name": "orgasm_denial",
+            "module": "arousal",
+            "permission": "arousal:read",
+            "description": "Fires when an orgasm is denied.",
+            "payload": [
+                { "name": "level", "type": "int", "description": "Arousal level at denial" }
+            ]
+        },
+        {
+            "name": "edge_start",
+            "module": "arousal",
+            "permission": "arousal:read",
+            "description": "Fires when edging starts."
+        },
+        {
+            "name": "orgasm_start",
+            "module": "arousal",
+            "permission": "arousal:read",
+            "description": "Fires when an orgasm begins."
+        },
+        {
+            "name": "connect",
+            "module": "ble",
+            "permission": null,
+            "description": "Fires when a BLE peripheral connects."
+        },
+        {
+            "name": "disconnect",
+            "module": "ble",
+            "permission": null,
+            "description": "Fires when a BLE peripheral disconnects."
+        },
+        {
+            "name": "mode_set",
+            "module": "system",
+            "permission": null,
+            "description": "Fires when the active operating mode changes."
+        },
+        {
+            "name": "tick",
+            "module": "system",
+            "permission": null,
+            "description": "Fires on each main loop tick."
+        }
+    ]
+}

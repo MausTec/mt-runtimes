@@ -1,0 +1,103 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://schemas.maus-tec.com/plugin-api/v1.3.0/plugin-api.json",
+    "title": "Plugin API Descriptor",
+    "description": "Describes the host functions and events available to plugins on a given product or SKU.",
+    "type": "object",
+    "required": [ "product", "version", "functions", "events" ],
+    "properties": {
+        "$schema": { "type": "string" },
+        "product": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Product identifier (e.g. 'edge-o-matic', 'core')."
+        },
+        "sku": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*$",
+            "description": "Optional SKU identifier (e.g. 'EOM3K', 'EOM3K-R'). Absent for product-level descriptors."
+        },
+        "version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "functions": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/function" }
+        },
+        "events": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/event" }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "function": {
+            "type": "object",
+            "required": [ "name", "permission" ],
+            "properties": {
+                "name": { "type": "string" },
+                "module": { "type": "string" },
+                "permission": { "type": [ "string", "null" ] },
+                "description": { "type": "string" },
+                "args": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/arg" }
+                },
+                "returns": {
+                    "oneOf": [
+                        { "$ref": "#/$defs/returnDesc" },
+                        { "type": "null" }
+                    ]
+                },
+                "variadic": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "event": {
+            "type": "object",
+            "required": [ "name", "permission" ],
+            "properties": {
+                "name": { "type": "string" },
+                "module": { "type": "string" },
+                "permission": { "type": [ "string", "null" ] },
+                "description": { "type": "string" },
+                "payload": {
+                    "type": "array",
+                    "items": { "$ref": "#/$defs/payloadField" }
+                }
+            },
+            "additionalProperties": false
+        },
+        "arg": {
+            "type": "object",
+            "required": [ "name", "type" ],
+            "properties": {
+                "name": { "type": "string" },
+                "type": { "enum": [ "int", "float", "string", "bool", "bytes" ] },
+                "description": { "type": "string" },
+                "optional": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "returnDesc": {
+            "type": "object",
+            "required": [ "type" ],
+            "properties": {
+                "type": { "enum": [ "int", "float", "string", "bool", "bytes" ] },
+                "description": { "type": "string" }
+            },
+            "additionalProperties": false
+        },
+        "payloadField": {
+            "type": "object",
+            "required": [ "name", "type" ],
+            "properties": {
+                "name": { "type": "string" },
+                "type": { "enum": [ "int", "float", "string", "bool", "bytes" ] },
+                "description": { "type": "string" }
+            },
+            "additionalProperties": false
+        }
+    }
+}

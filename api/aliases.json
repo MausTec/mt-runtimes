@@ -1,0 +1,10 @@
+{
+    "@eom": {
+        "product": "edge-o-matic",
+        "skus": [ "EOM3K" ]
+    },
+    "@mercury": {
+        "product": "mercury",
+        "skus": [ "M1K", "TRMCTL" ]
+    }
+}

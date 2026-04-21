@@ -1,0 +1,46 @@
+{
+    "$schema": "../schema/api-catalog.json",
+    "core": {
+        "versions": [
+            {
+                "version": "1.1.0",
+                "status": "current",
+                "fingerprint": "ab5c9e327144858d48ebb5ab001d76ed5953f4c762031c97b5f242008135b1a3"
+            }
+        ]
+    },
+    "products": {
+        "edge-o-matic": {
+            "versions": [
+                {
+                    "version": "2.0.1",
+                    "status": "current",
+                    "fingerprint": "78264b358cb66fca6eca3f86dca400f776a923a9f5d567a3757db9d64415b4da"
+                },
+                {
+                    "version": "1.0.0",
+                    "status": "supported",
+                    "fingerprint": "0186c855f2a5c1d2399fb4208d52b905b627a6a8fc427ee32d08e37fa49e8efa"
+                }
+            ],
+            "skus": {
+                "EOM3K": {
+                    "versions": [
+                        {
+                            "version": "2.0.1",
+                            "status": "current",
+                            "fingerprint": "78f2edfb87f4e7b62161a3446ba3fd4fba726a4183e85bc5b6f22bcc600cdce9"
+                        }
+                    ]
+                }
+            }
+        },
+        "mercury": {
+            "versions": [ ],
+            "skus": {
+                "M1K": { "versions": [ ] },
+                "TRMCTL": { "versions": [ ] }
+            }
+        }
+    }
+}

@@ -12,15 +12,22 @@
     "files": [
         "dist",
         "api",
-        "catalog.json"
+        "wasm",
+        "schema"
     ],
     "scripts": {
-        "build": "tsc",
+        "codegen": "node --experimental-strip-types scripts/generate-api-bundle.ts",
+        "build": "npm run codegen && tsc",
         "test": "vitest run",
         "typecheck": "tsc --noEmit",
         "prepack": "npm run build"
     },
-    "keywords": [ "maustec", "runtime", "wasm", "iot" ],
+    "keywords": [
+        "maustec",
+        "runtime",
+        "wasm",
+        "iot"
+    ],
     "author": "Maus-Tec LLC",
     "license": "MIT",
     "repository": {
@@ -31,7 +38,7 @@
         "node": ">=20"
     },
     "devDependencies": {
-        "@types/node": "^25.5.0",
+        "@types/node": "^25.6.0",
         "typescript": "^6.0.2",
         "vitest": "^4.1.2"
     }

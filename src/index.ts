@@ -3,6 +3,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { RootCatalog, ProductCatalog, ApiDescriptor, SkuEntry, VersionEntry } from "./types.js";
+import { apiBundle } from "./generated/api-bundle.js";
 
 export type {
   RootCatalog,
@@ -15,30 +16,122 @@ export type {
   VersionEntry,
   PayloadField,
   ArgDescriptor,
+  AliasTable,
+  PlatformAlias,
+  ParsedPlatformEntry,
+  ResolvedPlatformInfo,
+  RuntimeBundle,
 } from "./types.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const packageRoot = resolve(__dirname, "..");
+export {
+  resolveRuntimeBundle,
+  resolveAlias,
+  allAliases,
+  parsePlatformEntry,
+  intersectApis,
+  ResolutionError,
+} from "./resolver.js";
+export type { ResolveOptions } from "./resolver.js";
+
+export {
+  parseVersion,
+  parseConstraint,
+  matchesConstraint,
+  resolveVersion,
+  satisfies,
+  compareSemVer,
+} from "./version.js";
+export type { SemVer, ParsedConstraint } from "./version.js";
+
+// ---------------------------------------------------------------------------
+// Bundle-backed file loader
+// ---------------------------------------------------------------------------
+
+// Only evaluated if the bundle misses a file (Node.js fallback).
+// Kept in a function so `fileURLToPath(import.meta.url)` is never executed at
+// module load time, which would crash when bundled as CJS (import.meta.url -> undefined).
+let _packageRoot: string | undefined;
+
+function getPackageRoot(): string {
+  if (_packageRoot) return _packageRoot;
+
+  if (typeof import.meta.url === "undefined") {
+    throw new Error(
+      "Filesystem fallback unavailable in bundled environments. " +
+        "Regenerate the API bundle with `npm run codegen`.",
+    );
+  }
+
+  _packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  return _packageRoot;
+}
+
+/**
+ * Load an api/ file by path relative to the api/ directory.
+ * Primary: statically-bundled data (works everywhere, including browsers).
+ * Fallback: readFileSync for files added to disk before the next codegen run.
+ * @internal Used by resolver.ts; not part of the public API.
+ */
+export function loadApiFile(relPath: string): unknown {
+  if (Object.prototype.hasOwnProperty.call(apiBundle, relPath)) {
+    return apiBundle[relPath];
+  }
+
+  try {
+    return JSON.parse(readFileSync(resolve(getPackageRoot(), "api", relPath), "utf-8"));
+  } catch {
+    throw new Error(`API file not found in bundle or on disk: ${relPath}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Catalog access
+// ---------------------------------------------------------------------------
 
 let _catalog: RootCatalog | undefined;
 
 function loadCatalog(): RootCatalog {
   if (_catalog) return _catalog;
-  const raw = readFileSync(resolve(packageRoot, "catalog.json"), "utf-8");
-  _catalog = JSON.parse(raw) as RootCatalog;
+  _catalog = loadApiFile("catalog.json") as RootCatalog;
   return _catalog;
 }
 
 function productForSku(sku: string): string | undefined {
   const catalog = loadCatalog();
+  const skuLower = sku.toLowerCase();
   for (const [product, entry] of Object.entries(catalog.products)) {
-    if (sku in entry.skus) return product;
+    for (const key of Object.keys(entry.skus)) {
+      if (key.toLowerCase() === skuLower) return product;
+    }
+  }
+  return undefined;
+}
+
+/** Resolve the canonical SKU key (preserving catalog casing) from any casing. */
+function canonicalSku(sku: string): string | undefined {
+  const catalog = loadCatalog();
+  const skuLower = sku.toLowerCase();
+  for (const entry of Object.values(catalog.products)) {
+    for (const key of Object.keys(entry.skus)) {
+      if (key.toLowerCase() === skuLower) return key;
+    }
+  }
+  return undefined;
+}
+
+/** Resolve the canonical product key (preserving catalog casing) from any casing. */
+function canonicalProduct(product: string): string | undefined {
+  const catalog = loadCatalog();
+  const lower = product.toLowerCase();
+  for (const key of Object.keys(catalog.products)) {
+    if (key.toLowerCase() === lower) return key;
   }
   return undefined;
 }
 
 /**
  * Resolve a SKU to its product directory name.
+ * Lookup is case-insensitive.
  */
 export function resolveProduct(sku: string): string {
   const product = productForSku(sku);
@@ -48,14 +141,16 @@ export function resolveProduct(sku: string): string {
 
 /**
  * Get the product catalog for a given SKU or product name.
+ * Lookup is case-insensitive for both product names and SKUs.
  */
 export function getProductCatalog(skuOrProduct: string): ProductCatalog {
   const catalog = loadCatalog();
 
-  if (skuOrProduct in catalog.products) {
-    return catalog.products[skuOrProduct]!;
-  }
+  // Try as product name (case-insensitive)
+  const prodKey = canonicalProduct(skuOrProduct);
+  if (prodKey) return catalog.products[prodKey]!;
 
+  // Try as SKU (case-insensitive)
   const product = productForSku(skuOrProduct);
   if (product) return catalog.products[product]!;
 
@@ -64,11 +159,13 @@ export function getProductCatalog(skuOrProduct: string): ProductCatalog {
 
 /**
  * Get the SkuEntry (version list) for a specific SKU.
+ * Lookup is case-insensitive.
  */
 export function getSkuEntry(sku: string): SkuEntry {
   const product = productForSku(sku);
   if (!product) throw new Error(`Unknown SKU: ${sku}`);
-  return loadCatalog().products[product]!.skus[sku]!;
+  const canon = canonicalSku(sku)!;
+  return loadCatalog().products[product]!.skus[canon]!;
 }
 
 /**
@@ -78,15 +175,7 @@ export function getSkuEntry(sku: string): SkuEntry {
 export function getApiDescriptor(sku: string, version: string): ApiDescriptor {
   const product = productForSku(sku);
   if (!product) throw new Error(`Unknown SKU: ${sku}`);
-
-  const apiPath = resolve(packageRoot, "api", product, sku.toLowerCase(), `${version}.json`);
-
-  try {
-    const raw = readFileSync(apiPath, "utf-8");
-    return JSON.parse(raw) as ApiDescriptor;
-  } catch {
-    throw new Error(`API descriptor not found for ${sku} v${version}`);
-  }
+  return loadApiFile(`${product}/${sku.toLowerCase()}/${version}.json`) as ApiDescriptor;
 }
 
 /**
@@ -119,23 +208,34 @@ export function allProducts(): string[] {
 }
 
 // ---------------------------------------------------------------------------
-// Common mt-actions language builtins descriptor
+// WASM runtime paths
 // ---------------------------------------------------------------------------
 
-let _mtActionsEntry: SkuEntry | undefined;
+/**
+ * Resolve the absolute path to the mt-actions WASM binary.
+ * The returned path is suitable for passing to `createRuntime({ wasm: ... })`.
+ */
+export function getWasmPath(): string {
+  return resolve(getPackageRoot(), "wasm", "mt-actions-core.wasm");
+}
 
-function loadMtActionsEntry(): SkuEntry {
-  if (_mtActionsEntry) return _mtActionsEntry;
-  const raw = readFileSync(
-    resolve(packageRoot, "api", "common", "mt-actions", "catalog.json"),
-    "utf-8",
-  );
-  _mtActionsEntry = JSON.parse(raw) as SkuEntry;
-  return _mtActionsEntry;
+// ---------------------------------------------------------------------------
+// Core runtime builtins descriptor
+// ---------------------------------------------------------------------------
+
+function loadCoreEntry(): SkuEntry {
+  return loadCatalog().core;
 }
 
 /**
- * Load the mt-actions language builtin descriptor.
+ * Get the core runtime version catalog.
+ */
+export function getCoreCatalog(): SkuEntry {
+  return loadCoreEntry();
+}
+
+/**
+ * Load the core runtime builtin descriptor.
  * Contains all functions registered by mta_init_builtins() — available on
  * every platform that ships mt-actions 1.1.0+.
  *
@@ -143,9 +243,9 @@ function loadMtActionsEntry(): SkuEntry {
  * load the current (latest stable) version.
  */
 export function getMtActionsDescriptor(version?: string): ApiDescriptor {
-  const entry = loadMtActionsEntry();
+  const entry = loadCoreEntry();
   if (entry.versions.length === 0) {
-    throw new Error("No mt-actions versions available");
+    throw new Error("No core runtime versions available");
   }
 
   let targetVersion = version;
@@ -156,11 +256,5 @@ export function getMtActionsDescriptor(version?: string): ApiDescriptor {
     targetVersion = (current as VersionEntry).version;
   }
 
-  const descPath = resolve(packageRoot, "api", "common", "mt-actions", `${targetVersion}.json`);
-  try {
-    return JSON.parse(readFileSync(descPath, "utf-8")) as ApiDescriptor;
-  } catch {
-    throw new Error(`mt-actions descriptor not found for version ${targetVersion}`);
-  }
+  return loadApiFile(`core/${targetVersion}.json`) as ApiDescriptor;
 }
-
