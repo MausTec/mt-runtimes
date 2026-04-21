@@ -19,7 +19,7 @@
         },
         "version": {
             "type": "string",
-            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]((-[0-9]+)?(-g[0-9a-f]+)?)?$"
         },
         "functions": {
             "type": "array",
@@ -69,12 +69,17 @@
             },
             "additionalProperties": false
         },
+        "valueTypes": {
+            "type": "string",
+            "enum": [ "int", "float", "string", "bool", "bytes", "any", "number" ],
+            "description": "Allowed types for function arguments, return values, and event payload fields."
+        },
         "arg": {
             "type": "object",
             "required": [ "name", "type" ],
             "properties": {
                 "name": { "type": "string" },
-                "type": { "enum": [ "int", "float", "string", "bool", "bytes" ] },
+                "type": { "$ref": "#/$defs/valueTypes" },
                 "description": { "type": "string" },
                 "optional": { "type": "boolean" }
             },
@@ -84,7 +89,7 @@
             "type": "object",
             "required": [ "type" ],
             "properties": {
-                "type": { "enum": [ "int", "float", "string", "bool", "bytes" ] },
+                "type": { "$ref": "#/$defs/valueTypes" },
                 "description": { "type": "string" }
             },
             "additionalProperties": false
@@ -94,7 +99,7 @@
             "required": [ "name", "type" ],
             "properties": {
                 "name": { "type": "string" },
-                "type": { "enum": [ "int", "float", "string", "bool", "bytes" ] },
+                "type": { "$ref": "#/$defs/valueTypes" },
                 "description": { "type": "string" }
             },
             "additionalProperties": false
