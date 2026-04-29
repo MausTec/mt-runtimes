@@ -1,14 +1,63 @@
 // world root:component/root
-export type * as MtpCoreHostCallbacks010 from './interfaces/mtp-core-host-callbacks.js'; // import mtp:core/host-callbacks@0.1.0
-export type * as MtpCoreTypes010 from './interfaces/mtp-core-types.js'; // import mtp:core/types@0.1.0
-export type * as WasiCliEnvironment022 from './interfaces/wasi-cli-environment.js'; // import wasi:cli/environment@0.2.2
-export type * as WasiCliExit022 from './interfaces/wasi-cli-exit.js'; // import wasi:cli/exit@0.2.2
-export type * as WasiCliStderr022 from './interfaces/wasi-cli-stderr.js'; // import wasi:cli/stderr@0.2.2
-export type * as WasiCliStdin022 from './interfaces/wasi-cli-stdin.js'; // import wasi:cli/stdin@0.2.2
-export type * as WasiCliStdout022 from './interfaces/wasi-cli-stdout.js'; // import wasi:cli/stdout@0.2.2
-export type * as WasiClocksWallClock022 from './interfaces/wasi-clocks-wall-clock.js'; // import wasi:clocks/wall-clock@0.2.2
-export type * as WasiFilesystemPreopens022 from './interfaces/wasi-filesystem-preopens.js'; // import wasi:filesystem/preopens@0.2.2
-export type * as WasiFilesystemTypes022 from './interfaces/wasi-filesystem-types.js'; // import wasi:filesystem/types@0.2.2
-export type * as WasiIoError022 from './interfaces/wasi-io-error.js'; // import wasi:io/error@0.2.2
-export type * as WasiIoStreams022 from './interfaces/wasi-io-streams.js'; // import wasi:io/streams@0.2.2
-export * as bridge from './interfaces/mtp-core-bridge.js'; // export mtp:core/bridge@0.1.0
+import type * as MtpCoreHostCallbacks from './interfaces/mtp-core-host-callbacks.js'; // mtp:core/host-callbacks@0.1.0
+import type * as MtpCoreTypes from './interfaces/mtp-core-types.js'; // mtp:core/types@0.1.0
+import type * as WasiCliEnvironment from './interfaces/wasi-cli-environment.js'; // wasi:cli/environment@0.2.2
+import type * as WasiCliExit from './interfaces/wasi-cli-exit.js'; // wasi:cli/exit@0.2.2
+import type * as WasiCliStderr from './interfaces/wasi-cli-stderr.js'; // wasi:cli/stderr@0.2.2
+import type * as WasiCliStdin from './interfaces/wasi-cli-stdin.js'; // wasi:cli/stdin@0.2.2
+import type * as WasiCliStdout from './interfaces/wasi-cli-stdout.js'; // wasi:cli/stdout@0.2.2
+import type * as WasiClocksWallClock from './interfaces/wasi-clocks-wall-clock.js'; // wasi:clocks/wall-clock@0.2.2
+import type * as WasiFilesystemPreopens from './interfaces/wasi-filesystem-preopens.js'; // wasi:filesystem/preopens@0.2.2
+import type * as WasiFilesystemTypes from './interfaces/wasi-filesystem-types.js'; // wasi:filesystem/types@0.2.2
+import type * as WasiIoError from './interfaces/wasi-io-error.js'; // wasi:io/error@0.2.2
+import type * as WasiIoStreams from './interfaces/wasi-io-streams.js'; // wasi:io/streams@0.2.2
+import type * as MtpCoreBridge from './interfaces/mtp-core-bridge.js'; // mtp:core/bridge@0.1.0
+export interface ImportObject {
+  'mtp:core/host-callbacks@0.1.0': typeof MtpCoreHostCallbacks,
+  'mtp:core/types@0.1.0': typeof MtpCoreTypes,
+  'wasi:cli/environment@0.2.2': typeof WasiCliEnvironment,
+  'wasi:cli/exit@0.2.2': typeof WasiCliExit,
+  'wasi:cli/stderr@0.2.2': typeof WasiCliStderr,
+  'wasi:cli/stdin@0.2.2': typeof WasiCliStdin,
+  'wasi:cli/stdout@0.2.2': typeof WasiCliStdout,
+  'wasi:clocks/wall-clock@0.2.2': typeof WasiClocksWallClock,
+  'wasi:filesystem/preopens@0.2.2': typeof WasiFilesystemPreopens,
+  'wasi:filesystem/types@0.2.2': typeof WasiFilesystemTypes,
+  'wasi:io/error@0.2.2': typeof WasiIoError,
+  'wasi:io/streams@0.2.2': typeof WasiIoStreams,
+}
+export interface Root {
+  'mtp:core/bridge@0.1.0': typeof MtpCoreBridge,
+  bridge: typeof MtpCoreBridge,
+}
+
+/**
+* Instantiates this component with the provided imports and
+* returns a map of all the exports of the component.
+*
+* This function is intended to be similar to the
+* `WebAssembly.Instantiate` constructor. The second `imports`
+* argument is the "import object" for wasm, except here it
+* uses component-model-layer types instead of core wasm
+* integers/numbers/etc.
+*
+* The first argument to this function, `getCoreModule`, is
+* used to compile core wasm modules within the component.
+* Components are composed of core wasm modules and this callback
+* will be invoked per core wasm module. The caller of this
+* function is responsible for reading the core wasm module
+* identified by `path` and returning its compiled
+* `WebAssembly.Module` object. This would use the
+* `WebAssembly.Module` constructor on the web, for example.
+*/
+export function instantiate(
+getCoreModule: (path: string) => WebAssembly.Module,
+imports: ImportObject,
+instantiateCore?: (module: WebAssembly.Module, imports: Record<string, any>) => WebAssembly.Instance
+): Root;
+export function instantiate(
+getCoreModule: (path: string) => WebAssembly.Module | Promise<WebAssembly.Module>,
+imports: ImportObject,
+instantiateCore?: (module: WebAssembly.Module, imports: Record<string, any>) => WebAssembly.Instance | Promise<WebAssembly.Instance>
+): Root | Promise<Root>;
+
