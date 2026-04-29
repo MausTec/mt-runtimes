@@ -153,7 +153,6 @@ export interface WasmBundle {
 // types from `instantiateMtpCore()`.
 
 import type * as MtpCoreBridge from "../wasm/interfaces/mtp-core-bridge.js";
-import type * as MtpCoreHostCallbacks from "../wasm/interfaces/mtp-core-host-callbacks.js";
 import type * as MtpCoreTypes from "../wasm/interfaces/mtp-core-types.js";
 
 import type {
@@ -169,8 +168,19 @@ import type {
 /** The `mtp:core/bridge` export interface */
 export type Bridge = typeof MtpCoreBridge;
 
-/** The `mtp:core/host-callbacks` import interface */
-export type HostCallbacks = typeof MtpCoreHostCallbacks;
+/**
+ * The `mtp:core/host-callbacks` import interface.
+ *
+ * Declared as an explicit interface (not `typeof MtpCoreHostCallbacks`)
+ * so that plain object literals satisfy the type without requiring a module
+ * namespace shape (which TypeScript would require a `default` property for).
+ */
+export interface HostCallbacks {
+  hostDispatch(slot: number, fnName: string, args: ArgValue[]): number;
+  configSave(slot: number): boolean;
+  traceEvent(slot: number, kind: TraceKind, fnName: string, retCode: number): void;
+  errorReport(slot: number, fnName: string, errorCode: number): void;
+}
 
 export type ArgValue = MtpCoreTypes.ArgValue;
 export type ConfigValue = MtpCoreTypes.ConfigValue;
@@ -208,7 +218,7 @@ export interface WasiShim {
   };
 
   ioError: { Error: WasiResourceCtor<WasiIoError> };
-  
+
   ioStreams: {
     InputStream: WasiResourceCtor<WasiInputStream>;
     OutputStream: WasiResourceCtor<WasiOutputStream>;
