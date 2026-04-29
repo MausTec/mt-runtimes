@@ -23,6 +23,49 @@ export type {
   RuntimeBundle,
 } from "./types.js";
 
+// ----------------------------------------------------------------------------- 
+// Re-export WASM Runtime Core, WASI shim, resolver APIs, and version utilities
+// ----------------------------------------------------------------------------- 
+
+export { instantiateMtpCore } from "./loader.js";
+
+export {
+  defaultWasi,
+  nodePreopens,
+  emptyPreopens,
+  inMemoryFilesystem,
+  descriptorFromPath,
+  nodeWritableStream,
+  captureStream,
+  stdoutStream,
+  stderrStream,
+  WasiExitError,
+  HostError,
+  cliEnvironment,
+  cliExit,
+  cliStdin,
+  cliStdout,
+  cliStderr,
+  filesystemTypes,
+  ioError,
+  ioStreams,
+} from "./wasi-shim.js";
+
+export type {
+  Bridge,
+  HostCallbacks,
+  ArgValue,
+  ConfigValue,
+  ExecutionResult,
+  TraceKind,
+  MtpCoreOptions,
+  WasiShim,
+  WasiDescriptor,
+  WasiInputStream,
+  WasiOutputStream,
+  WasiIoError,
+} from "./types.js";
+
 export {
   resolveRuntimeBundle,
   resolveAlias,
@@ -31,6 +74,7 @@ export {
   intersectApis,
   ResolutionError,
 } from "./resolver.js";
+
 export type { ResolveOptions } from "./resolver.js";
 
 export {
@@ -41,6 +85,7 @@ export {
   satisfies,
   compareSemVer,
 } from "./version.js";
+
 export type { SemVer, ParsedConstraint } from "./version.js";
 
 // ---------------------------------------------------------------------------
@@ -205,18 +250,6 @@ export function allSkus(): string[] {
  */
 export function allProducts(): string[] {
   return Object.keys(loadCatalog().products);
-}
-
-// ---------------------------------------------------------------------------
-// WASM runtime paths
-// ---------------------------------------------------------------------------
-
-/**
- * Resolve the absolute path to the mt-actions WASM binary.
- * The returned path is suitable for passing to `createRuntime({ wasm: ... })`.
- */
-export function getWasmPath(): string {
-  return resolve(getPackageRoot(), "wasm", "mt-actions-core.wasm");
 }
 
 // ---------------------------------------------------------------------------

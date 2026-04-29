@@ -1,13 +1,20 @@
 {
     "name": "@maustec/mt-runtimes",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "Runtime packs for Maus-Tec hardware products",
     "type": "module",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js"
-        }
+        },
+        "./wasm": {
+            "types": "./wasm/mtp-core.d.ts",
+            "import": "./wasm/mtp-core.js"
+        },
+        "./wasm/types": "./wasm/interfaces/mtp-core-types.d.ts",
+        "./wasm/bridge": "./wasm/interfaces/mtp-core-bridge.d.ts",
+        "./wasm/host-callbacks": "./wasm/interfaces/mtp-core-host-callbacks.d.ts"
     },
     "files": [
         "dist",

@@ -132,3 +132,97 @@ export interface RuntimeBundle {
   /** Metadata about each resolved platform (for diagnostics/hover). */
   resolvedPlatforms: ResolvedPlatformInfo[];
 }
+
+/**
+ * @deprecated Removed in 0.1.0. The Component Model toolchain replaced the
+ * Emscripten flow; use `instantiateMtpCore()` from the package root.
+ *
+ * It will be deleted once mt-sdk is updated.
+ */
+export interface WasmBundle {
+  binary: ArrayBuffer;
+  factory: (opts: Record<string, unknown>) => Promise<unknown>;
+}
+
+// ---------------------------------------------------------------------------
+// mtp:core Component Model Types
+// ---------------------------------------------------------------------------
+
+// Re-exports of the jco-generated declarations so consumers of @maustec/mt-runtimes
+// never have to reach into wasm/. The wrapper module (loader.ts) returns these
+// types from `instantiateMtpCore()`.
+
+import type * as MtpCoreBridge from "../wasm/interfaces/mtp-core-bridge.js";
+import type * as MtpCoreHostCallbacks from "../wasm/interfaces/mtp-core-host-callbacks.js";
+import type * as MtpCoreTypes from "../wasm/interfaces/mtp-core-types.js";
+
+import type {
+  Descriptor as WasiDescriptor,
+} from "../wasm/interfaces/wasi-filesystem-types.js";
+
+import type {
+  InputStream as WasiInputStream,
+  OutputStream as WasiOutputStream,
+  Error as WasiIoError,
+} from "../wasm/interfaces/wasi-io-streams.js";
+
+/** The `mtp:core/bridge` export interface */
+export type Bridge = typeof MtpCoreBridge;
+
+/** The `mtp:core/host-callbacks` import interface */
+export type HostCallbacks = typeof MtpCoreHostCallbacks;
+
+export type ArgValue = MtpCoreTypes.ArgValue;
+export type ConfigValue = MtpCoreTypes.ConfigValue;
+export type ExecutionResult = MtpCoreTypes.ExecutionResult;
+export type TraceKind = MtpCoreTypes.TraceKind;
+
+export type { WasiDescriptor, WasiInputStream, WasiOutputStream, WasiIoError };
+
+/**
+ * Loose constructor type for WASI resource classes. The jco-generated
+ * declarations expose these resources as classes with private constructors,
+ * which means we can't satisfy `typeof Class` from a host implementation.
+ * 
+ * We just need *some* constructor that produces objects with the
+ * right method shape. The actual instances are opaque to the bridge.
+ */
+export type WasiResourceCtor<T> = new (...args: never[]) => T;
+
+/**
+ * Concrete WASI shim: one impl per `wasi:*` import the bridge component
+ * relies on. Defaults are supplied by `defaultWasi()`. Override individual
+ * interfaces to redirect filesystem/streams for tests or sandboxing.
+ */
+export interface WasiShim {
+  cliEnvironment: { getArguments(): string[] };
+  cliExit: { exit(status: { tag: "ok"; val: void } | { tag: "err"; val: void }): void };
+  cliStderr: { getStderr(): WasiOutputStream };
+  cliStdin: { getStdin(): WasiInputStream };
+  cliStdout: { getStdout(): WasiOutputStream };
+  filesystemPreopens: { getDirectories(): Array<[WasiDescriptor, string]> };
+
+  filesystemTypes: {
+    Descriptor: WasiResourceCtor<WasiDescriptor>;
+    filesystemErrorCode(err: WasiIoError): string | undefined;
+  };
+
+  ioError: { Error: WasiResourceCtor<WasiIoError> };
+  
+  ioStreams: {
+    InputStream: WasiResourceCtor<WasiInputStream>;
+    OutputStream: WasiResourceCtor<WasiOutputStream>;
+  };
+}
+
+/** Options accepted by `instantiateMtpCore()`. */
+export interface MtpCoreOptions {
+  /** Implementations of the four mtp:core/host-callbacks methods. */
+  host: HostCallbacks;
+  /**
+   * Per-interface overrides for the WASI shim. Anything not specified falls
+   * back to `defaultWasi()`, which provides real Node-backed stdio, wall
+   * clock, and an empty (sandboxed) filesystem preopen table.
+   */
+  wasi?: Partial<WasiShim>;
+}
