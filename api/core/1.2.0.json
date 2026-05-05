@@ -1,0 +1,369 @@
+{
+  "$schema": "https://schemas.maus-tec.com/plugin-api/v1.3.0/plugin-api.json",
+  "product": "core",
+  "version": "1.2.0",
+  "functions": [
+    {
+      "name": "eq",
+      "module": "compare",
+      "permission": null,
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "Left operand"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Right operand"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "1 if a == b else 0 (in $_); C return 0 selects the `then` branch"
+      }
+    },
+    {
+      "name": "neq",
+      "module": "compare",
+      "permission": null,
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "Left operand"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Right operand"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "1 if a != b else 0 (in $_); C return 0 selects the `then` branch"
+      }
+    },
+    {
+      "name": "gt",
+      "module": "compare",
+      "permission": null
+    },
+    {
+      "name": "lt",
+      "module": "compare",
+      "permission": null
+    },
+    {
+      "name": "gte",
+      "module": "compare",
+      "permission": null
+    },
+    {
+      "name": "lte",
+      "module": "compare",
+      "permission": null
+    },
+    {
+      "name": "set",
+      "module": "control",
+      "permission": null,
+      "args": [
+        {
+          "name": "dest",
+          "type": "varname",
+          "description": "Destination variable (must already exist \u2014 declared in vars block)"
+        },
+        {
+          "name": "value",
+          "type": "any",
+          "description": "Value to assign (literals or variable references are resolved)"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "add",
+      "module": "math",
+      "permission": null,
+      "args": [
+        {
+          "name": "a",
+          "type": "number",
+          "description": "First addend"
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "description": "Second addend"
+        }
+      ],
+      "returns": {
+        "type": "float",
+        "description": "Sum (in $_)"
+      }
+    },
+    {
+      "name": "sub",
+      "module": "math",
+      "permission": null
+    },
+    {
+      "name": "inc",
+      "module": "math",
+      "permission": null,
+      "args": [
+        {
+          "name": "var",
+          "type": "varname",
+          "description": "Variable to increment (must already exist)"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Final value (in $_); always increments by 1"
+      }
+    },
+    {
+      "name": "dec",
+      "module": "math",
+      "permission": null,
+      "args": [
+        {
+          "name": "var",
+          "type": "varname",
+          "description": "Variable to decrement (must already exist)"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Final value (in $_); always decrements by 1"
+      }
+    },
+    {
+      "name": "strcmp",
+      "module": "string",
+      "permission": null,
+      "args": [
+        {
+          "name": "a",
+          "type": "string",
+          "description": "First string"
+        },
+        {
+          "name": "b",
+          "type": "string",
+          "description": "Second string"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "strcmp result (in $_)"
+      }
+    },
+    {
+      "name": "strlen",
+      "module": "string",
+      "permission": null,
+      "args": [
+        {
+          "name": "str",
+          "type": "string",
+          "description": "Input string"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Byte length (in $_)"
+      }
+    },
+    {
+      "name": "charat",
+      "module": "string",
+      "permission": null,
+      "args": [
+        {
+          "name": "str",
+          "type": "string",
+          "description": "Input string"
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "description": "Zero-based index"
+        }
+      ],
+      "returns": {
+        "type": "string",
+        "description": "Single-character string (in $_); out-of-bounds raises"
+      }
+    },
+    {
+      "name": "getbyte",
+      "module": "array",
+      "permission": null,
+      "args": [
+        {
+          "name": "array",
+          "type": "array",
+          "description": "Byte array (typically `$buf`)"
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "description": "Zero-based byte offset"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Byte value 0-255 (in $_); out-of-bounds raises"
+      }
+    },
+    {
+      "name": "setbyte",
+      "module": "array",
+      "permission": null,
+      "args": [
+        {
+          "name": "array",
+          "type": "array",
+          "description": "Byte array"
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "description": "Zero-based byte offset"
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "description": "Byte value"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "mul",
+      "module": "math",
+      "permission": null
+    },
+    {
+      "name": "div",
+      "module": "math Raises MTA_RT_ERR_DIV_ZERO behaviour: division by zero raises MTA_RT_ERR_TYPE_MISMATCH (\"divide by zero\"). Returning a sentinel from scripts is the new policy for hard runtime faults \u2014 surface, don't hide.",
+      "permission": null
+    },
+    {
+      "name": "mod",
+      "module": "math Integer remainder. Both operands are coerced to int (silent float truncation if needed). Division by zero raises a runtime error.",
+      "permission": null
+    },
+    {
+      "name": "round",
+      "module": "math",
+      "permission": null,
+      "args": [
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Value to round"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Nearest integer (in $_)"
+      }
+    },
+    {
+      "name": "chr",
+      "module": "string",
+      "permission": null,
+      "args": [
+        {
+          "name": "code",
+          "type": "int",
+          "description": "Character code 0-255"
+        }
+      ],
+      "returns": {
+        "type": "string",
+        "description": "Single-character string (in $_)"
+      }
+    },
+    {
+      "name": "to_string",
+      "module": "string",
+      "permission": null,
+      "args": [
+        {
+          "name": "value",
+          "type": "any",
+          "description": "Value to stringify"
+        }
+      ],
+      "returns": {
+        "type": "string",
+        "description": "Decimal representation (in $_)"
+      }
+    },
+    {
+      "name": "concat",
+      "module": "string",
+      "permission": null,
+      "args": [
+        {
+          "name": "parts",
+          "type": "string",
+          "optional": true,
+          "description": "Values to concatenate"
+        }
+      ],
+      "variadic": true,
+      "returns": {
+        "type": "string",
+        "description": "Joined string, capped at 255 bytes (in $_)"
+      }
+    },
+    {
+      "name": "get_config",
+      "module": "config",
+      "permission": null,
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Config key"
+        }
+      ],
+      "returns": {
+        "type": "any",
+        "description": "Config value (in $_); raises VAR_NOT_SET if key is unset Config defaults are declared in the host's config declaration section, not here \u2014 the default-arg overload has been removed."
+      }
+    },
+    {
+      "name": "set_config",
+      "module": "config",
+      "permission": null,
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Config key"
+        },
+        {
+          "name": "value",
+          "type": "any",
+          "description": "Value to store"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    }
+  ],
+  "events": []
+}

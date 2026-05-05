@@ -9,8 +9,13 @@
             },
             {
                 "version": "1.1.0",
-                "status": "current",
+                "status": "supported",
                 "fingerprint": "8d0df7e3b3fd2c199e724f817d987ad926d0a6f8df8166e92041f2236fac6aa9"
+            },
+            {
+                "version": "1.2.0",
+                "status": "current",
+                "fingerprint": "8c9e7dc9a1630df4ceb893807f2539affeff8be3701cc3344ce3b1019fca93f1"
             }
         ]
     },
