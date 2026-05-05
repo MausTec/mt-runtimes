@@ -4210,6 +4210,38 @@ let gen = (function* _initGenerator () {
         enum0 = 'action-exit';
         break;
       }
+      case 2: {
+        enum0 = 'event-enter';
+        break;
+      }
+      case 3: {
+        enum0 = 'event-exit';
+        break;
+      }
+      case 4: {
+        enum0 = 'fn-enter';
+        break;
+      }
+      case 5: {
+        enum0 = 'fn-exit';
+        break;
+      }
+      case 6: {
+        enum0 = 'cond-eval';
+        break;
+      }
+      case 7: {
+        enum0 = 'loop-iter';
+        break;
+      }
+      case 8: {
+        enum0 = 'note';
+        break;
+      }
+      case 9: {
+        enum0 = 'error';
+        break;
+      }
       default: {
         throw new TypeError('invalid discriminant specified for TraceKind');
       }
@@ -6435,6 +6467,8 @@ let postReturn4;
 let postReturn4Async;
 let postReturn5;
 let postReturn5Async;
+let postReturn6;
+let postReturn6Async;
 let bridge010Init;
 
 function init() {
@@ -7387,11 +7421,191 @@ function setConfigValue(arg0, arg1, arg2) {
   task.exit();
   return bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool());
 }
-let bridge010EnableDriverScope;
+let bridge010GetGlobalValue;
 
-function enableDriverScope(arg0) {
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="enable-driver-scope"][Instruction::CallWasm] enter', {
-    funcName: 'enable-driver-scope',
+function getGlobalValue(arg0, arg1) {
+  
+  var encodeRes = _utf8AllocateAndEncode(arg1, realloc1, memory0);
+  var ptr0= encodeRes.ptr;
+  var len0 = encodeRes.len;
+  
+  _debugLog('[iface="mtp:core/bridge@0.1.0", function="get-global-value"][Instruction::CallWasm] enter', {
+    funcName: 'get-global-value',
+    paramCount: 3,
+    async: false,
+    postReturn: true,
+  });
+  const hostProvided = false;
+  
+  const [task, _wasm_call_currentTaskID] = createNewCurrentTask({
+    componentIdx: 0,
+    isAsync: false,
+    isManualAsync: false,
+    entryFnName: 'bridge010GetGlobalValue',
+    getCallbackFn: () => null,
+    callbackFnName: 'null',
+    errHandling: 'none',
+    callingWasmExport: true,
+  });
+  
+  const started = task.enterSync();
+  task.setReturnMemoryIdx(0);
+  task.setReturnMemory(memory0);
+  let ret =   _withGlobalCurrentTaskMeta({
+    taskID: task.id(),
+    componentIdx: task.componentIdx(),
+    fn: () => bridge010GetGlobalValue(toInt32(arg0), ptr0, len0),
+  });
+  
+  let variant4;
+  switch (dataView(memory0).getUint8(ret + 0, true)) {
+    case 0: {
+      variant4 = undefined;
+      break;
+    }
+    case 1: {
+      let variant3;
+      switch (dataView(memory0).getUint8(ret + 4, true)) {
+        case 0: {
+          var bool1 = dataView(memory0).getUint8(ret + 8, true);
+          variant3= {
+            tag: 'bool-val',
+            val: bool1 == 0 ? false : (bool1 == 1 ? true : throwInvalidBool())
+          };
+          break;
+        }
+        case 1: {
+          variant3= {
+            tag: 'int-val',
+            val: dataView(memory0).getInt32(ret + 8, true)
+          };
+          break;
+        }
+        case 2: {
+          var ptr2 = dataView(memory0).getUint32(ret + 8, true);
+          var len2 = dataView(memory0).getUint32(ret + 12, true);
+          var result2 = TEXT_DECODER_UTF8.decode(new Uint8Array(memory0.buffer, ptr2, len2));
+          variant3= {
+            tag: 'str-val',
+            val: result2
+          };
+          break;
+        }
+        default: {
+          throw new TypeError('invalid variant discriminant for ConfigValue');
+        }
+      }
+      variant4 = variant3;
+      break;
+    }
+    default: {
+      throw new TypeError('invalid variant discriminant for option');
+    }
+  }
+  _debugLog('[iface="mtp:core/bridge@0.1.0", function="get-global-value"][Instruction::Return]', {
+    funcName: 'get-global-value',
+    paramCount: 1,
+    async: false,
+    postReturn: true
+  });
+  task.resolve([variant4]);
+  const retCopy = variant4;
+  
+  let cstate = getOrCreateAsyncState(0);
+  cstate.mayLeave = false;
+  postReturn6(ret);
+  cstate.mayLeave = true;
+  task.exit();
+  return retCopy;
+  
+}
+let bridge010SetGlobalValue;
+
+function setGlobalValue(arg0, arg1, arg2) {
+  
+  var encodeRes = _utf8AllocateAndEncode(arg1, realloc1, memory0);
+  var ptr0= encodeRes.ptr;
+  var len0 = encodeRes.len;
+  
+  var variant2 = arg2;
+  let variant2_0;
+  let variant2_1;
+  let variant2_2;
+  switch (variant2.tag) {
+    case 'bool-val': {
+      const e = variant2.val;
+      variant2_0 = 0;
+      variant2_1 = e ? 1 : 0;
+      variant2_2 = 0;
+      break;
+    }
+    case 'int-val': {
+      const e = variant2.val;
+      variant2_0 = 1;
+      variant2_1 = toInt32(e);
+      variant2_2 = 0;
+      break;
+    }
+    case 'str-val': {
+      const e = variant2.val;
+      
+      var encodeRes = _utf8AllocateAndEncode(e, realloc1, memory0);
+      var ptr1= encodeRes.ptr;
+      var len1 = encodeRes.len;
+      
+      variant2_0 = 2;
+      variant2_1 = ptr1;
+      variant2_2 = len1;
+      break;
+    }
+    default: {
+      throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant2.tag)}\` (received \`${variant2}\`) specified for \`ConfigValue\``);
+    }
+  }
+  _debugLog('[iface="mtp:core/bridge@0.1.0", function="set-global-value"][Instruction::CallWasm] enter', {
+    funcName: 'set-global-value',
+    paramCount: 6,
+    async: false,
+    postReturn: false,
+  });
+  const hostProvided = false;
+  
+  const [task, _wasm_call_currentTaskID] = createNewCurrentTask({
+    componentIdx: 0,
+    isAsync: false,
+    isManualAsync: false,
+    entryFnName: 'bridge010SetGlobalValue',
+    getCallbackFn: () => null,
+    callbackFnName: 'null',
+    errHandling: 'none',
+    callingWasmExport: true,
+  });
+  
+  const started = task.enterSync();
+  task.setReturnMemoryIdx(0);
+  task.setReturnMemory(memory0);
+  let ret =   _withGlobalCurrentTaskMeta({
+    taskID: task.id(),
+    componentIdx: task.componentIdx(),
+    fn: () => bridge010SetGlobalValue(toInt32(arg0), ptr0, len0, variant2_0, variant2_1, variant2_2),
+  });
+  
+  var bool3 = ret;
+  _debugLog('[iface="mtp:core/bridge@0.1.0", function="set-global-value"][Instruction::Return]', {
+    funcName: 'set-global-value',
+    paramCount: 1,
+    async: false,
+    postReturn: false
+  });
+  task.resolve([bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool())]);
+  task.exit();
+  return bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool());
+}
+let bridge010ResetGlobals;
+
+function resetGlobals(arg0) {
+  _debugLog('[iface="mtp:core/bridge@0.1.0", function="reset-globals"][Instruction::CallWasm] enter', {
+    funcName: 'reset-globals',
     paramCount: 1,
     async: false,
     postReturn: false,
@@ -7402,7 +7616,7 @@ function enableDriverScope(arg0) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010EnableDriverScope',
+    entryFnName: 'bridge010ResetGlobals',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -7413,12 +7627,12 @@ function enableDriverScope(arg0) {
   let ret =   _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010EnableDriverScope(toInt32(arg0)),
+    fn: () => bridge010ResetGlobals(toInt32(arg0)),
   });
   
   var bool0 = ret;
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="enable-driver-scope"][Instruction::Return]', {
-    funcName: 'enable-driver-scope',
+  _debugLog('[iface="mtp:core/bridge@0.1.0", function="reset-globals"][Instruction::Return]', {
+    funcName: 'reset-globals',
     paramCount: 1,
     async: false,
     postReturn: false
@@ -7426,44 +7640,6 @@ function enableDriverScope(arg0) {
   task.resolve([bool0 == 0 ? false : (bool0 == 1 ? true : throwInvalidBool())]);
   task.exit();
   return bool0 == 0 ? false : (bool0 == 1 ? true : throwInvalidBool());
-}
-let bridge010DisableDriverScope;
-
-function disableDriverScope(arg0) {
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="disable-driver-scope"][Instruction::CallWasm] enter', {
-    funcName: 'disable-driver-scope',
-    paramCount: 1,
-    async: false,
-    postReturn: false,
-  });
-  const hostProvided = false;
-  
-  const [task, _wasm_call_currentTaskID] = createNewCurrentTask({
-    componentIdx: 0,
-    isAsync: false,
-    isManualAsync: false,
-    entryFnName: 'bridge010DisableDriverScope',
-    getCallbackFn: () => null,
-    callbackFnName: 'null',
-    errHandling: 'none',
-    callingWasmExport: true,
-  });
-  
-  const started = task.enterSync();
-  let ret;  _withGlobalCurrentTaskMeta({
-    taskID: task.id(),
-    componentIdx: task.componentIdx(),
-    fn: () => bridge010DisableDriverScope(toInt32(arg0)),
-  });
-  
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="disable-driver-scope"][Instruction::Return]', {
-    funcName: 'disable-driver-scope',
-    paramCount: 0,
-    async: false,
-    postReturn: false
-  });
-  task.resolve([ret]);
-  task.exit();
 }
 let trampoline0 = _trampoline0.manuallyAsync ? new WebAssembly.Suspending(_lowerImportBackwardsCompat.bind(
 null,
@@ -7794,7 +7970,7 @@ null,
   componentIdx: 0,
   isAsync: false,
   isManualAsync: _trampoline11.manuallyAsync,
-  paramLiftFns: [_liftFlatS32,_liftFlatEnum([['action-enter', null, 1, 1, 1],['action-exit', null, 1, 1, 1],]),_liftFlatStringAny,_liftFlatS32],
+  paramLiftFns: [_liftFlatS32,_liftFlatEnum([['action-enter', null, 1, 1, 1],['action-exit', null, 1, 1, 1],['event-enter', null, 1, 1, 1],['event-exit', null, 1, 1, 1],['fn-enter', null, 1, 1, 1],['fn-exit', null, 1, 1, 1],['cond-eval', null, 1, 1, 1],['loop-iter', null, 1, 1, 1],['note', null, 1, 1, 1],['error', null, 1, 1, 1],]),_liftFlatStringAny,_liftFlatS32],
   resultLowerFns: [],
   funcTypeIsAsync: false,
   getCallbackFn: () => null,
@@ -7813,7 +7989,7 @@ null,
   componentIdx: 0,
   isAsync: false,
   isManualAsync: _trampoline11.manuallyAsync,
-  paramLiftFns: [_liftFlatS32,_liftFlatEnum([['action-enter', null, 1, 1, 1],['action-exit', null, 1, 1, 1],]),_liftFlatStringAny,_liftFlatS32],
+  paramLiftFns: [_liftFlatS32,_liftFlatEnum([['action-enter', null, 1, 1, 1],['action-exit', null, 1, 1, 1],['event-enter', null, 1, 1, 1],['event-exit', null, 1, 1, 1],['fn-enter', null, 1, 1, 1],['fn-exit', null, 1, 1, 1],['cond-eval', null, 1, 1, 1],['loop-iter', null, 1, 1, 1],['note', null, 1, 1, 1],['error', null, 1, 1, 1],]),_liftFlatStringAny,_liftFlatS32],
   resultLowerFns: [],
   funcTypeIsAsync: false,
   getCallbackFn: () => null,
@@ -8618,6 +8794,14 @@ try {
   postReturn5Async = exports1['cabi_post_mtp:core/bridge@0.1.0#get-config-value'];
 }
 
+postReturn6 = exports1['cabi_post_mtp:core/bridge@0.1.0#get-global-value'];
+
+try {
+  postReturn6Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.1.0#get-global-value']);
+} catch(err) {
+  postReturn6Async = exports1['cabi_post_mtp:core/bridge@0.1.0#get-global-value'];
+}
+
 bridge010Init = exports1['mtp:core/bridge@0.1.0#init'];
 bridge010LoadPlugin = exports1['mtp:core/bridge@0.1.0#load-plugin'];
 bridge010FreePlugin = exports1['mtp:core/bridge@0.1.0#free-plugin'];
@@ -8631,22 +8815,24 @@ bridge010GetPluginName = exports1['mtp:core/bridge@0.1.0#get-plugin-name'];
 bridge010GetConfigFields = exports1['mtp:core/bridge@0.1.0#get-config-fields'];
 bridge010GetConfigValue = exports1['mtp:core/bridge@0.1.0#get-config-value'];
 bridge010SetConfigValue = exports1['mtp:core/bridge@0.1.0#set-config-value'];
-bridge010EnableDriverScope = exports1['mtp:core/bridge@0.1.0#enable-driver-scope'];
-bridge010DisableDriverScope = exports1['mtp:core/bridge@0.1.0#disable-driver-scope'];
+bridge010GetGlobalValue = exports1['mtp:core/bridge@0.1.0#get-global-value'];
+bridge010SetGlobalValue = exports1['mtp:core/bridge@0.1.0#set-global-value'];
+bridge010ResetGlobals = exports1['mtp:core/bridge@0.1.0#reset-globals'];
 const bridge010 = {
   callFunction: callFunction,
-  disableDriverScope: disableDriverScope,
-  enableDriverScope: enableDriverScope,
   fireEvent: fireEvent,
   freePlugin: freePlugin,
   getConfigFields: getConfigFields,
   getConfigValue: getConfigValue,
+  getGlobalValue: getGlobalValue,
   getPluginName: getPluginName,
   init: init,
   loadPlugin: loadPlugin,
   registerEvent: registerEvent,
   registerHostFunction: registerHostFunction,
+  resetGlobals: resetGlobals,
   setConfigValue: setConfigValue,
+  setGlobalValue: setGlobalValue,
   setPluginConfig: setPluginConfig,
   setTracing: setTracing,
   

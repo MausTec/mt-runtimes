@@ -21,8 +21,24 @@ export interface ArgValueNullVal {
  * ## `"action-enter"`
  * 
  * ## `"action-exit"`
+ * 
+ * ## `"event-enter"`
+ * 
+ * ## `"event-exit"`
+ * 
+ * ## `"fn-enter"`
+ * 
+ * ## `"fn-exit"`
+ * 
+ * ## `"cond-eval"`
+ * 
+ * ## `"loop-iter"`
+ * 
+ * ## `"note"`
+ * 
+ * ## `"error"`
  */
-export type TraceKind = 'action-enter' | 'action-exit';
+export type TraceKind = 'action-enter' | 'action-exit' | 'event-enter' | 'event-exit' | 'fn-enter' | 'fn-exit' | 'cond-eval' | 'loop-iter' | 'note' | 'error';
 export interface ExecutionResult {
   value: ArgValue,
   error: number,
