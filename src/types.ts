@@ -176,7 +176,7 @@ export type Bridge = typeof MtpCoreBridge;
  * namespace shape (which TypeScript would require a `default` property for).
  */
 export interface HostCallbacks {
-  hostDispatch(slot: number, fnName: string, args: ArgValue[]): number;
+  hostDispatch(slot: number, fnName: string, args: ArgValue[]): HostResult;
   configSave(slot: number): boolean;
   traceEvent(slot: number, kind: TraceKind, fnName: string, retCode: number): void;
   errorReport(slot: number, fnName: string, errorCode: number): void;
@@ -186,6 +186,9 @@ export type ArgValue = MtpCoreTypes.ArgValue;
 export type ConfigValue = MtpCoreTypes.ConfigValue;
 export type ExecutionResult = MtpCoreTypes.ExecutionResult;
 export type TraceKind = MtpCoreTypes.TraceKind;
+export type HostResult = MtpCoreTypes.HostResult;
+export type HostError = MtpCoreTypes.HostError;
+export type RuntimeErrorKind = MtpCoreTypes.RuntimeErrorKind;
 
 export type { WasiDescriptor, WasiInputStream, WasiOutputStream, WasiIoError };
 
