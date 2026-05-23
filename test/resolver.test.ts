@@ -7,7 +7,15 @@ import {
   allAliases,
   ResolutionError,
 } from "../src/resolver.js";
+import { getCoreCatalog } from "../src/index.js";
+import { resolveVersion } from "../src/version.js";
 import type { HostFunctionDescriptor, EventDescriptor } from "../src/types.js";
+
+// Derive expected core versions dynamically from the catalog so adding new
+// core runtime versions doesn't require touching these tests.
+const CORE_VERSIONS = getCoreCatalog().versions;
+const LATEST_CORE = resolveVersion(CORE_VERSIONS, null)!.version;
+const LATEST_CORE_1X = resolveVersion(CORE_VERSIONS, "~> 1.0")!.version;
 
 // ---------------------------------------------------------------------------
 // parsePlatformEntry
@@ -209,7 +217,7 @@ describe("resolveRuntimeBundle", () => {
     it("resolves without sdk_version (uses latest)", () => {
       const bundle = resolveRuntimeBundle({});
       expect(bundle.builtins.product).toBe("core");
-      expect(bundle.builtins.version).toBe("1.1.0");
+      expect(bundle.builtins.version).toBe(LATEST_CORE);
     });
 
     it("resolves with exact sdk_version constraint", () => {
@@ -219,7 +227,7 @@ describe("resolveRuntimeBundle", () => {
 
     it("resolves with ~> sdk_version constraint", () => {
       const bundle = resolveRuntimeBundle({ sdkVersion: "~> 1.0" });
-      expect(bundle.builtins.version).toBe("1.1.0");
+      expect(bundle.builtins.version).toBe(LATEST_CORE_1X);
     });
 
     it("errors on unsatisfiable sdk_version", () => {
@@ -346,7 +354,7 @@ describe("resolveRuntimeBundle", () => {
       });
 
       expect(bundle.builtins.product).toBe("core");
-      expect(bundle.builtins.version).toBe("1.1.0");
+      expect(bundle.builtins.version).toBe(LATEST_CORE_1X);
       expect(bundle.platformApi).not.toBeNull();
       expect(bundle.resolvedPlatforms[0]!.identifier).toBe("@eom");
 
