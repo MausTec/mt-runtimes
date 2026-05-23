@@ -1,6 +1,6 @@
 // world root:component/root
-import type * as MtpCoreHostCallbacks from './interfaces/mtp-core-host-callbacks.js'; // mtp:core/host-callbacks@0.1.0
-import type * as MtpCoreTypes from './interfaces/mtp-core-types.js'; // mtp:core/types@0.1.0
+import type * as MtpCoreHostCallbacks from './interfaces/mtp-core-host-callbacks.js'; // mtp:core/host-callbacks@0.2.0
+import type * as MtpCoreTypes from './interfaces/mtp-core-types.js'; // mtp:core/types@0.2.0
 import type * as WasiCliEnvironment from './interfaces/wasi-cli-environment.js'; // wasi:cli/environment@0.2.2
 import type * as WasiCliExit from './interfaces/wasi-cli-exit.js'; // wasi:cli/exit@0.2.2
 import type * as WasiCliStderr from './interfaces/wasi-cli-stderr.js'; // wasi:cli/stderr@0.2.2
@@ -11,10 +11,10 @@ import type * as WasiFilesystemPreopens from './interfaces/wasi-filesystem-preop
 import type * as WasiFilesystemTypes from './interfaces/wasi-filesystem-types.js'; // wasi:filesystem/types@0.2.2
 import type * as WasiIoError from './interfaces/wasi-io-error.js'; // wasi:io/error@0.2.2
 import type * as WasiIoStreams from './interfaces/wasi-io-streams.js'; // wasi:io/streams@0.2.2
-import type * as MtpCoreBridge from './interfaces/mtp-core-bridge.js'; // mtp:core/bridge@0.1.0
+import type * as MtpCoreBridge from './interfaces/mtp-core-bridge.js'; // mtp:core/bridge@0.2.0
 export interface ImportObject {
-  'mtp:core/host-callbacks@0.1.0': typeof MtpCoreHostCallbacks,
-  'mtp:core/types@0.1.0': typeof MtpCoreTypes,
+  'mtp:core/host-callbacks@0.2.0': typeof MtpCoreHostCallbacks,
+  'mtp:core/types@0.2.0': typeof MtpCoreTypes,
   'wasi:cli/environment@0.2.2': typeof WasiCliEnvironment,
   'wasi:cli/exit@0.2.2': typeof WasiCliExit,
   'wasi:cli/stderr@0.2.2': typeof WasiCliStderr,
@@ -27,7 +27,7 @@ export interface ImportObject {
   'wasi:io/streams@0.2.2': typeof WasiIoStreams,
 }
 export interface Root {
-  'mtp:core/bridge@0.1.0': typeof MtpCoreBridge,
+  'mtp:core/bridge@0.2.0': typeof MtpCoreBridge,
   bridge: typeof MtpCoreBridge,
 }
 

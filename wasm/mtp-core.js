@@ -1147,13 +1147,8 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
     
     const ERR_CTX_TABLES = {};
     
-    const i32ToF32I = new Int32Array(1);
-    const i32ToF32F = new Float32Array(i32ToF32I.buffer);
-    
     let dv = new DataView(new ArrayBuffer());
     const dataView = mem => dv.buffer === mem.buffer ? dv : dv = new DataView(mem.buffer);
-    
-    const f32ToI32 = f => (i32ToF32F[0] = f, i32ToF32I[0]);
     
     function toUint64(val) {
       const converted = BigInt(val)
@@ -2619,6 +2614,20 @@ function _lowerFlatU64(ctx) {
   ctx.storagePtr += 8;
 }
 
+function _lowerFlatFloat32(ctx) {
+  _debugLog('[_lowerFlatFloat32()] args', { ctx });
+  
+  if (ctx.vals.length !== 1) { throw new Error('unexpected number of vals'); }
+  
+  const rem = ctx.storagePtr % 4;
+  if (rem !== 0) { ctx.storagePtr += (4 - rem); }
+  
+  _requireValidNumericPrimitive.bind('f32', ctx.vals[0]);
+  new DataView(ctx.memory.buffer).setFloat32(ctx.storagePtr, ctx.vals[0], true);
+  
+  ctx.storagePtr += 4;
+}
+
 function _lowerFlatStringAny(ctx) {
   switch (ctx.stringEncoding) {
     case 'utf8':
@@ -3741,7 +3750,7 @@ let gen = (function* _initGenerator () {
   let exports0;
   
   const _trampoline0 = function(arg0) {
-    _debugLog('[iface="mtp:core/host-callbacks@0.1.0", function="config-save"] [Instruction::CallInterface] (sync, @ enter)');
+    _debugLog('[iface="mtp:core/host-callbacks@0.2.0", function="config-save"] [Instruction::CallInterface] (sync, @ enter)');
     let hostProvided = true;
     
     let parentTask;
@@ -3786,7 +3795,7 @@ let gen = (function* _initGenerator () {
       fn: () => configSave(arg0)
     })
     ;
-    _debugLog('[iface="mtp:core/host-callbacks@0.1.0", function="config-save"][Instruction::Return]', {
+    _debugLog('[iface="mtp:core/host-callbacks@0.2.0", function="config-save"][Instruction::Return]', {
       funcName: 'config-save',
       paramCount: 1,
       async: false,
@@ -3796,7 +3805,7 @@ let gen = (function* _initGenerator () {
     task.exit();
     return ret ? 1 : 0;
   }
-  _trampoline0.fnName = 'mtp:core/host-callbacks@0.1.0#configSave';
+  _trampoline0.fnName = 'mtp:core/host-callbacks@0.2.0#configSave';
   let exports1;
   const handleTable1 = [T_FLAG, 0];
   const captureTable1= new Map();
@@ -4094,8 +4103,10 @@ let gen = (function* _initGenerator () {
   let memory0;
   let realloc0;
   let realloc0Async;
+  let realloc1;
+  let realloc1Async;
   
-  const _trampoline10 = function(arg0, arg1, arg2, arg3, arg4) {
+  const _trampoline10 = function(arg0, arg1, arg2, arg3, arg4, arg5) {
     var ptr0 = arg1;
     var len0 = arg2;
     var result0 = TEXT_DECODER_UTF8.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -4142,7 +4153,7 @@ let gen = (function* _initGenerator () {
       }
       result3.push(variant2);
     }
-    _debugLog('[iface="mtp:core/host-callbacks@0.1.0", function="host-dispatch"] [Instruction::CallInterface] (sync, @ enter)');
+    _debugLog('[iface="mtp:core/host-callbacks@0.2.0", function="host-dispatch"] [Instruction::CallInterface] (sync, @ enter)');
     let hostProvided = true;
     
     let parentTask;
@@ -4187,17 +4198,114 @@ let gen = (function* _initGenerator () {
       fn: () => hostDispatch(arg0, result0, result3)
     })
     ;
-    _debugLog('[iface="mtp:core/host-callbacks@0.1.0", function="host-dispatch"][Instruction::Return]', {
+    var {value: v4_0, error: v4_1 } = ret;
+    var variant6 = v4_0;
+    switch (variant6.tag) {
+      case 'int-val': {
+        const e = variant6.val;
+        dataView(memory0).setInt8(arg5 + 0, 0, true);
+        dataView(memory0).setInt32(arg5 + 4, toInt32(e), true);
+        break;
+      }
+      case 'float-val': {
+        const e = variant6.val;
+        dataView(memory0).setInt8(arg5 + 0, 1, true);
+        dataView(memory0).setFloat32(arg5 + 4, +e, true);
+        break;
+      }
+      case 'str-val': {
+        const e = variant6.val;
+        dataView(memory0).setInt8(arg5 + 0, 2, true);
+        
+        var encodeRes = _utf8AllocateAndEncode(e, realloc0, memory0);
+        var ptr5= encodeRes.ptr;
+        var len5 = encodeRes.len;
+        
+        dataView(memory0).setUint32(arg5 + 8, len5, true);
+        dataView(memory0).setUint32(arg5 + 4, ptr5, true);
+        break;
+      }
+      case 'null-val': {
+        dataView(memory0).setInt8(arg5 + 0, 3, true);
+        break;
+      }
+      default: {
+        throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant6.tag)}\` (received \`${variant6}\`) specified for \`ArgValue\``);
+      }
+    }
+    var variant10 = v4_1;
+    if (variant10 === null || variant10=== undefined) {
+      dataView(memory0).setInt8(arg5 + 12, 0, true);
+    } else {
+      const e = variant10;
+      dataView(memory0).setInt8(arg5 + 12, 1, true);
+      var {kind: v7_0, message: v7_1 } = e;
+      var val8 = v7_0;
+      let enum8;
+      switch (val8) {
+        case 'unknown': {
+          enum8 = 0;
+          break;
+        }
+        case 'var-not-set': {
+          enum8 = 1;
+          break;
+        }
+        case 'cycle-detected': {
+          enum8 = 2;
+          break;
+        }
+        case 'missing-return': {
+          enum8 = 3;
+          break;
+        }
+        case 'arg-count-mismatch': {
+          enum8 = 4;
+          break;
+        }
+        case 'missing-arg': {
+          enum8 = 5;
+          break;
+        }
+        case 'unknown-arg': {
+          enum8 = 6;
+          break;
+        }
+        case 'type-mismatch': {
+          enum8 = 7;
+          break;
+        }
+        case 'host-dispatch-failed': {
+          enum8 = 8;
+          break;
+        }
+        default: {
+          if ((v7_0) instanceof Error) {
+            console.error(v7_0);
+          }
+          
+          throw new TypeError(`"${val8}" is not one of the cases of runtime-error-kind`);
+        }
+      }
+      dataView(memory0).setInt8(arg5 + 16, enum8, true);
+      
+      var encodeRes = _utf8AllocateAndEncode(v7_1, realloc0, memory0);
+      var ptr9= encodeRes.ptr;
+      var len9 = encodeRes.len;
+      
+      dataView(memory0).setUint32(arg5 + 24, len9, true);
+      dataView(memory0).setUint32(arg5 + 20, ptr9, true);
+    }
+    _debugLog('[iface="mtp:core/host-callbacks@0.2.0", function="host-dispatch"][Instruction::Return]', {
       funcName: 'host-dispatch',
-      paramCount: 1,
+      paramCount: 0,
       async: false,
       postReturn: false
     });
-    task.resolve([toInt32(ret)]);
+    task.resolve([ret]);
     task.exit();
-    return toInt32(ret);
   }
-  _trampoline10.fnName = 'mtp:core/host-callbacks@0.1.0#hostDispatch';
+  _trampoline10.fnName = 'mtp:core/host-callbacks@0.2.0#hostDispatch';
   
   const _trampoline11 = function(arg0, arg1, arg2, arg3, arg4) {
     let enum0;
@@ -4210,6 +4318,38 @@ let gen = (function* _initGenerator () {
         enum0 = 'action-exit';
         break;
       }
+      case 2: {
+        enum0 = 'event-enter';
+        break;
+      }
+      case 3: {
+        enum0 = 'event-exit';
+        break;
+      }
+      case 4: {
+        enum0 = 'fn-enter';
+        break;
+      }
+      case 5: {
+        enum0 = 'fn-exit';
+        break;
+      }
+      case 6: {
+        enum0 = 'cond-eval';
+        break;
+      }
+      case 7: {
+        enum0 = 'loop-iter';
+        break;
+      }
+      case 8: {
+        enum0 = 'note';
+        break;
+      }
+      case 9: {
+        enum0 = 'error';
+        break;
+      }
       default: {
         throw new TypeError('invalid discriminant specified for TraceKind');
       }
@@ -4217,7 +4357,7 @@ let gen = (function* _initGenerator () {
     var ptr1 = arg2;
     var len1 = arg3;
     var result1 = TEXT_DECODER_UTF8.decode(new Uint8Array(memory0.buffer, ptr1, len1));
-    _debugLog('[iface="mtp:core/host-callbacks@0.1.0", function="trace-event"] [Instruction::CallInterface] (sync, @ enter)');
+    _debugLog('[iface="mtp:core/host-callbacks@0.2.0", function="trace-event"] [Instruction::CallInterface] (sync, @ enter)');
     let hostProvided = true;
     
     let parentTask;
@@ -4262,7 +4402,7 @@ let gen = (function* _initGenerator () {
       fn: () => traceEvent(arg0, enum0, result1, arg4)
     })
     ;
-    _debugLog('[iface="mtp:core/host-callbacks@0.1.0", function="trace-event"][Instruction::Return]', {
+    _debugLog('[iface="mtp:core/host-callbacks@0.2.0", function="trace-event"][Instruction::Return]', {
       funcName: 'trace-event',
       paramCount: 0,
       async: false,
@@ -4271,13 +4411,13 @@ let gen = (function* _initGenerator () {
     task.resolve([ret]);
     task.exit();
   }
-  _trampoline11.fnName = 'mtp:core/host-callbacks@0.1.0#traceEvent';
+  _trampoline11.fnName = 'mtp:core/host-callbacks@0.2.0#traceEvent';
   
   const _trampoline12 = function(arg0, arg1, arg2, arg3) {
     var ptr0 = arg1;
     var len0 = arg2;
     var result0 = TEXT_DECODER_UTF8.decode(new Uint8Array(memory0.buffer, ptr0, len0));
-    _debugLog('[iface="mtp:core/host-callbacks@0.1.0", function="error-report"] [Instruction::CallInterface] (sync, @ enter)');
+    _debugLog('[iface="mtp:core/host-callbacks@0.2.0", function="error-report"] [Instruction::CallInterface] (sync, @ enter)');
     let hostProvided = true;
     
     let parentTask;
@@ -4322,7 +4462,7 @@ let gen = (function* _initGenerator () {
       fn: () => errorReport(arg0, result0, arg3)
     })
     ;
-    _debugLog('[iface="mtp:core/host-callbacks@0.1.0", function="error-report"][Instruction::Return]', {
+    _debugLog('[iface="mtp:core/host-callbacks@0.2.0", function="error-report"][Instruction::Return]', {
       funcName: 'error-report',
       paramCount: 0,
       async: false,
@@ -4331,7 +4471,7 @@ let gen = (function* _initGenerator () {
     task.resolve([ret]);
     task.exit();
   }
-  _trampoline12.fnName = 'mtp:core/host-callbacks@0.1.0#errorReport';
+  _trampoline12.fnName = 'mtp:core/host-callbacks@0.2.0#errorReport';
   
   const _trampoline13 = function(arg0) {
     _debugLog('[iface="wasi:cli/environment@0.2.2", function="get-arguments"] [Instruction::CallInterface] (sync, @ enter)');
@@ -4381,11 +4521,11 @@ let gen = (function* _initGenerator () {
     ;
     var vec1 = ret;
     var len1 = vec1.length;
-    var result1 = realloc0(0, 0, 4, len1 * 8);
+    var result1 = realloc1(0, 0, 4, len1 * 8);
     for (let i = 0; i < vec1.length; i++) {
       const e = vec1[i];
       const base = result1 + i * 8;
-      var encodeRes = _utf8AllocateAndEncode(e, realloc0, memory0);
+      var encodeRes = _utf8AllocateAndEncode(e, realloc1, memory0);
       var ptr0= encodeRes.ptr;
       var len0 = encodeRes.len;
       
@@ -6384,7 +6524,7 @@ const _trampoline23 = function(arg0) {
   ;
   var vec3 = ret;
   var len3 = vec3.length;
-  var result3 = realloc0(0, 0, 4, len3 * 12);
+  var result3 = realloc1(0, 0, 4, len3 * 12);
   for (let i = 0; i < vec3.length; i++) {
     const e = vec3[i];
     const base = result3 + i * 12;var [tuple0_0, tuple0_1] = e;
@@ -6401,7 +6541,7 @@ const _trampoline23 = function(arg0) {
     
     dataView(memory0).setInt32(base + 0, handle1, true);
     
-    var encodeRes = _utf8AllocateAndEncode(tuple0_1, realloc0, memory0);
+    var encodeRes = _utf8AllocateAndEncode(tuple0_1, realloc1, memory0);
     var ptr2= encodeRes.ptr;
     var len2 = encodeRes.len;
     
@@ -6421,8 +6561,6 @@ const _trampoline23 = function(arg0) {
 }
 _trampoline23.fnName = 'wasi:filesystem/preopens@0.2.2#getDirectories';
 let exports3;
-let realloc1;
-let realloc1Async;
 let postReturn0;
 let postReturn0Async;
 let postReturn1;
@@ -6435,10 +6573,12 @@ let postReturn4;
 let postReturn4Async;
 let postReturn5;
 let postReturn5Async;
-let bridge010Init;
+let postReturn6;
+let postReturn6Async;
+let bridge020Init;
 
 function init() {
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="init"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="init"][Instruction::CallWasm] enter', {
     funcName: 'init',
     paramCount: 0,
     async: false,
@@ -6450,7 +6590,7 @@ function init() {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010Init',
+    entryFnName: 'bridge020Init',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -6461,10 +6601,10 @@ function init() {
   let ret;  _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010Init(),
+    fn: () => bridge020Init(),
   });
   
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="init"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="init"][Instruction::Return]', {
     funcName: 'init',
     paramCount: 0,
     async: false,
@@ -6473,15 +6613,15 @@ function init() {
   task.resolve([ret]);
   task.exit();
 }
-let bridge010LoadPlugin;
+let bridge020LoadPlugin;
 
 function loadPlugin(arg0) {
   
-  var encodeRes = _utf8AllocateAndEncode(arg0, realloc1, memory0);
+  var encodeRes = _utf8AllocateAndEncode(arg0, realloc0, memory0);
   var ptr0= encodeRes.ptr;
   var len0 = encodeRes.len;
   
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="load-plugin"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="load-plugin"][Instruction::CallWasm] enter', {
     funcName: 'load-plugin',
     paramCount: 2,
     async: false,
@@ -6493,7 +6633,7 @@ function loadPlugin(arg0) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010LoadPlugin',
+    entryFnName: 'bridge020LoadPlugin',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'throw-result-err',
@@ -6506,7 +6646,7 @@ function loadPlugin(arg0) {
   let ret =   _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010LoadPlugin(ptr0, len0),
+    fn: () => bridge020LoadPlugin(ptr0, len0),
   });
   
   let variant2;
@@ -6532,7 +6672,7 @@ function loadPlugin(arg0) {
       throw new TypeError('invalid variant discriminant for expected');
     }
   }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="load-plugin"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="load-plugin"][Instruction::Return]', {
     funcName: 'load-plugin',
     paramCount: 1,
     async: false,
@@ -6555,10 +6695,10 @@ function loadPlugin(arg0) {
   return retCopy.val;
   
 }
-let bridge010FreePlugin;
+let bridge020FreePlugin;
 
 function freePlugin(arg0) {
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="free-plugin"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="free-plugin"][Instruction::CallWasm] enter', {
     funcName: 'free-plugin',
     paramCount: 1,
     async: false,
@@ -6570,7 +6710,7 @@ function freePlugin(arg0) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010FreePlugin',
+    entryFnName: 'bridge020FreePlugin',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -6581,10 +6721,10 @@ function freePlugin(arg0) {
   let ret;  _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010FreePlugin(toInt32(arg0)),
+    fn: () => bridge020FreePlugin(toInt32(arg0)),
   });
   
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="free-plugin"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="free-plugin"][Instruction::Return]', {
     funcName: 'free-plugin',
     paramCount: 0,
     async: false,
@@ -6593,15 +6733,15 @@ function freePlugin(arg0) {
   task.resolve([ret]);
   task.exit();
 }
-let bridge010SetPluginConfig;
+let bridge020SetPluginConfig;
 
 function setPluginConfig(arg0, arg1) {
   
-  var encodeRes = _utf8AllocateAndEncode(arg1, realloc1, memory0);
+  var encodeRes = _utf8AllocateAndEncode(arg1, realloc0, memory0);
   var ptr0= encodeRes.ptr;
   var len0 = encodeRes.len;
   
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="set-plugin-config"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="set-plugin-config"][Instruction::CallWasm] enter', {
     funcName: 'set-plugin-config',
     paramCount: 3,
     async: false,
@@ -6613,7 +6753,7 @@ function setPluginConfig(arg0, arg1) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010SetPluginConfig',
+    entryFnName: 'bridge020SetPluginConfig',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -6626,11 +6766,11 @@ function setPluginConfig(arg0, arg1) {
   let ret =   _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010SetPluginConfig(toInt32(arg0), ptr0, len0),
+    fn: () => bridge020SetPluginConfig(toInt32(arg0), ptr0, len0),
   });
   
   var bool1 = ret;
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="set-plugin-config"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="set-plugin-config"][Instruction::Return]', {
     funcName: 'set-plugin-config',
     paramCount: 1,
     async: false,
@@ -6640,11 +6780,11 @@ function setPluginConfig(arg0, arg1) {
   task.exit();
   return bool1 == 0 ? false : (bool1 == 1 ? true : throwInvalidBool());
 }
-let bridge010RegisterHostFunction;
+let bridge020RegisterHostFunction;
 
 function registerHostFunction(arg0, arg1) {
   
-  var encodeRes = _utf8AllocateAndEncode(arg0, realloc1, memory0);
+  var encodeRes = _utf8AllocateAndEncode(arg0, realloc0, memory0);
   var ptr0= encodeRes.ptr;
   var len0 = encodeRes.len;
   
@@ -6659,7 +6799,7 @@ function registerHostFunction(arg0, arg1) {
   } else {
     const e = variant2;
     
-    var encodeRes = _utf8AllocateAndEncode(e, realloc1, memory0);
+    var encodeRes = _utf8AllocateAndEncode(e, realloc0, memory0);
     var ptr1= encodeRes.ptr;
     var len1 = encodeRes.len;
     
@@ -6667,7 +6807,7 @@ function registerHostFunction(arg0, arg1) {
     variant2_1 = ptr1;
     variant2_2 = len1;
   }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="register-host-function"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="register-host-function"][Instruction::CallWasm] enter', {
     funcName: 'register-host-function',
     paramCount: 5,
     async: false,
@@ -6679,7 +6819,7 @@ function registerHostFunction(arg0, arg1) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010RegisterHostFunction',
+    entryFnName: 'bridge020RegisterHostFunction',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -6692,10 +6832,10 @@ function registerHostFunction(arg0, arg1) {
   let ret;  _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010RegisterHostFunction(ptr0, len0, variant2_0, variant2_1, variant2_2),
+    fn: () => bridge020RegisterHostFunction(ptr0, len0, variant2_0, variant2_1, variant2_2),
   });
   
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="register-host-function"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="register-host-function"][Instruction::Return]', {
     funcName: 'register-host-function',
     paramCount: 0,
     async: false,
@@ -6704,11 +6844,11 @@ function registerHostFunction(arg0, arg1) {
   task.resolve([ret]);
   task.exit();
 }
-let bridge010RegisterEvent;
+let bridge020RegisterEvent;
 
 function registerEvent(arg0, arg1) {
   
-  var encodeRes = _utf8AllocateAndEncode(arg0, realloc1, memory0);
+  var encodeRes = _utf8AllocateAndEncode(arg0, realloc0, memory0);
   var ptr0= encodeRes.ptr;
   var len0 = encodeRes.len;
   
@@ -6723,7 +6863,7 @@ function registerEvent(arg0, arg1) {
   } else {
     const e = variant2;
     
-    var encodeRes = _utf8AllocateAndEncode(e, realloc1, memory0);
+    var encodeRes = _utf8AllocateAndEncode(e, realloc0, memory0);
     var ptr1= encodeRes.ptr;
     var len1 = encodeRes.len;
     
@@ -6731,7 +6871,7 @@ function registerEvent(arg0, arg1) {
     variant2_1 = ptr1;
     variant2_2 = len1;
   }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="register-event"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="register-event"][Instruction::CallWasm] enter', {
     funcName: 'register-event',
     paramCount: 5,
     async: false,
@@ -6743,7 +6883,7 @@ function registerEvent(arg0, arg1) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010RegisterEvent',
+    entryFnName: 'bridge020RegisterEvent',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -6756,10 +6896,10 @@ function registerEvent(arg0, arg1) {
   let ret;  _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010RegisterEvent(ptr0, len0, variant2_0, variant2_1, variant2_2),
+    fn: () => bridge020RegisterEvent(ptr0, len0, variant2_0, variant2_1, variant2_2),
   });
   
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="register-event"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="register-event"][Instruction::Return]', {
     funcName: 'register-event',
     paramCount: 0,
     async: false,
@@ -6768,153 +6908,17 @@ function registerEvent(arg0, arg1) {
   task.resolve([ret]);
   task.exit();
 }
-let bridge010FireEvent;
+let bridge020FireEvent;
 
 function fireEvent(arg0, arg1, arg2) {
   
-  var encodeRes = _utf8AllocateAndEncode(arg1, realloc1, memory0);
-  var ptr0= encodeRes.ptr;
-  var len0 = encodeRes.len;
-  
-  var variant2 = arg2;
-  let variant2_0;
-  let variant2_1;
-  let variant2_2;
-  switch (variant2.tag) {
-    case 'int-val': {
-      const e = variant2.val;
-      variant2_0 = 0;
-      variant2_1 = toInt32(e);
-      variant2_2 = 0;
-      break;
-    }
-    case 'float-val': {
-      const e = variant2.val;
-      variant2_0 = 1;
-      variant2_1 = f32ToI32(+e);
-      variant2_2 = 0;
-      break;
-    }
-    case 'str-val': {
-      const e = variant2.val;
-      
-      var encodeRes = _utf8AllocateAndEncode(e, realloc1, memory0);
-      var ptr1= encodeRes.ptr;
-      var len1 = encodeRes.len;
-      
-      variant2_0 = 2;
-      variant2_1 = ptr1;
-      variant2_2 = len1;
-      break;
-    }
-    case 'null-val': {
-      variant2_0 = 3;
-      variant2_1 = 0;
-      variant2_2 = 0;
-      break;
-    }
-    default: {
-      throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant2.tag)}\` (received \`${variant2}\`) specified for \`ArgValue\``);
-    }
-  }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="fire-event"][Instruction::CallWasm] enter', {
-    funcName: 'fire-event',
-    paramCount: 6,
-    async: false,
-    postReturn: true,
-  });
-  const hostProvided = false;
-  
-  const [task, _wasm_call_currentTaskID] = createNewCurrentTask({
-    componentIdx: 0,
-    isAsync: false,
-    isManualAsync: false,
-    entryFnName: 'bridge010FireEvent',
-    getCallbackFn: () => null,
-    callbackFnName: 'null',
-    errHandling: 'none',
-    callingWasmExport: true,
-  });
-  
-  const started = task.enterSync();
-  task.setReturnMemoryIdx(0);
-  task.setReturnMemory(memory0);
-  let ret =   _withGlobalCurrentTaskMeta({
-    taskID: task.id(),
-    componentIdx: task.componentIdx(),
-    fn: () => bridge010FireEvent(toInt32(arg0), ptr0, len0, variant2_0, variant2_1, variant2_2),
-  });
-  
-  let variant4;
-  switch (dataView(memory0).getUint8(ret + 0, true)) {
-    case 0: {
-      variant4= {
-        tag: 'int-val',
-        val: dataView(memory0).getInt32(ret + 4, true)
-      };
-      break;
-    }
-    case 1: {
-      variant4= {
-        tag: 'float-val',
-        val: dataView(memory0).getFloat32(ret + 4, true)
-      };
-      break;
-    }
-    case 2: {
-      var ptr3 = dataView(memory0).getUint32(ret + 4, true);
-      var len3 = dataView(memory0).getUint32(ret + 8, true);
-      var result3 = TEXT_DECODER_UTF8.decode(new Uint8Array(memory0.buffer, ptr3, len3));
-      variant4= {
-        tag: 'str-val',
-        val: result3
-      };
-      break;
-    }
-    case 3: {
-      variant4= {
-        tag: 'null-val',
-      };
-      break;
-    }
-    default: {
-      throw new TypeError('invalid variant discriminant for ArgValue');
-    }
-  }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="fire-event"][Instruction::Return]', {
-    funcName: 'fire-event',
-    paramCount: 1,
-    async: false,
-    postReturn: true
-  });
-  task.resolve([{
-    value: variant4,
-    error: dataView(memory0).getInt32(ret + 12, true),
-  }]);
-  const retCopy = {
-    value: variant4,
-    error: dataView(memory0).getInt32(ret + 12, true),
-  };
-  
-  let cstate = getOrCreateAsyncState(0);
-  cstate.mayLeave = false;
-  postReturn1(ret);
-  cstate.mayLeave = true;
-  task.exit();
-  return retCopy;
-  
-}
-let bridge010CallFunction;
-
-function callFunction(arg0, arg1, arg2) {
-  
-  var encodeRes = _utf8AllocateAndEncode(arg1, realloc1, memory0);
+  var encodeRes = _utf8AllocateAndEncode(arg1, realloc0, memory0);
   var ptr0= encodeRes.ptr;
   var len0 = encodeRes.len;
   
   var vec3 = arg2;
   var len3 = vec3.length;
-  var result3 = realloc1(0, 0, 4, len3 * 12);
+  var result3 = realloc0(0, 0, 4, len3 * 12);
   for (let i = 0; i < vec3.length; i++) {
     const e = vec3[i];
     const base = result3 + i * 12;var variant2 = e;
@@ -6935,7 +6939,7 @@ function callFunction(arg0, arg1, arg2) {
         const e = variant2.val;
         dataView(memory0).setInt8(base + 0, 2, true);
         
-        var encodeRes = _utf8AllocateAndEncode(e, realloc1, memory0);
+        var encodeRes = _utf8AllocateAndEncode(e, realloc0, memory0);
         var ptr1= encodeRes.ptr;
         var len1 = encodeRes.len;
         
@@ -6952,8 +6956,8 @@ function callFunction(arg0, arg1, arg2) {
       }
     }
   }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="call-function"][Instruction::CallWasm] enter', {
-    funcName: 'call-function',
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="fire-event"][Instruction::CallWasm] enter', {
+    funcName: 'fire-event',
     paramCount: 5,
     async: false,
     postReturn: true,
@@ -6964,7 +6968,7 @@ function callFunction(arg0, arg1, arg2) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010CallFunction',
+    entryFnName: 'bridge020FireEvent',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -6977,7 +6981,7 @@ function callFunction(arg0, arg1, arg2) {
   let ret =   _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010CallFunction(toInt32(arg0), ptr0, len0, result3, len3),
+    fn: () => bridge020FireEvent(toInt32(arg0), ptr0, len0, result3, len3),
   });
   
   let variant5;
@@ -7016,7 +7020,142 @@ function callFunction(arg0, arg1, arg2) {
       throw new TypeError('invalid variant discriminant for ArgValue');
     }
   }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="call-function"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="fire-event"][Instruction::Return]', {
+    funcName: 'fire-event',
+    paramCount: 1,
+    async: false,
+    postReturn: true
+  });
+  task.resolve([{
+    value: variant5,
+    error: dataView(memory0).getInt32(ret + 12, true),
+  }]);
+  const retCopy = {
+    value: variant5,
+    error: dataView(memory0).getInt32(ret + 12, true),
+  };
+  
+  let cstate = getOrCreateAsyncState(0);
+  cstate.mayLeave = false;
+  postReturn1(ret);
+  cstate.mayLeave = true;
+  task.exit();
+  return retCopy;
+  
+}
+let bridge020CallFunction;
+
+function callFunction(arg0, arg1, arg2) {
+  
+  var encodeRes = _utf8AllocateAndEncode(arg1, realloc0, memory0);
+  var ptr0= encodeRes.ptr;
+  var len0 = encodeRes.len;
+  
+  var vec3 = arg2;
+  var len3 = vec3.length;
+  var result3 = realloc0(0, 0, 4, len3 * 12);
+  for (let i = 0; i < vec3.length; i++) {
+    const e = vec3[i];
+    const base = result3 + i * 12;var variant2 = e;
+    switch (variant2.tag) {
+      case 'int-val': {
+        const e = variant2.val;
+        dataView(memory0).setInt8(base + 0, 0, true);
+        dataView(memory0).setInt32(base + 4, toInt32(e), true);
+        break;
+      }
+      case 'float-val': {
+        const e = variant2.val;
+        dataView(memory0).setInt8(base + 0, 1, true);
+        dataView(memory0).setFloat32(base + 4, +e, true);
+        break;
+      }
+      case 'str-val': {
+        const e = variant2.val;
+        dataView(memory0).setInt8(base + 0, 2, true);
+        
+        var encodeRes = _utf8AllocateAndEncode(e, realloc0, memory0);
+        var ptr1= encodeRes.ptr;
+        var len1 = encodeRes.len;
+        
+        dataView(memory0).setUint32(base + 8, len1, true);
+        dataView(memory0).setUint32(base + 4, ptr1, true);
+        break;
+      }
+      case 'null-val': {
+        dataView(memory0).setInt8(base + 0, 3, true);
+        break;
+      }
+      default: {
+        throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant2.tag)}\` (received \`${variant2}\`) specified for \`ArgValue\``);
+      }
+    }
+  }
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="call-function"][Instruction::CallWasm] enter', {
+    funcName: 'call-function',
+    paramCount: 5,
+    async: false,
+    postReturn: true,
+  });
+  const hostProvided = false;
+  
+  const [task, _wasm_call_currentTaskID] = createNewCurrentTask({
+    componentIdx: 0,
+    isAsync: false,
+    isManualAsync: false,
+    entryFnName: 'bridge020CallFunction',
+    getCallbackFn: () => null,
+    callbackFnName: 'null',
+    errHandling: 'none',
+    callingWasmExport: true,
+  });
+  
+  const started = task.enterSync();
+  task.setReturnMemoryIdx(0);
+  task.setReturnMemory(memory0);
+  let ret =   _withGlobalCurrentTaskMeta({
+    taskID: task.id(),
+    componentIdx: task.componentIdx(),
+    fn: () => bridge020CallFunction(toInt32(arg0), ptr0, len0, result3, len3),
+  });
+  
+  let variant5;
+  switch (dataView(memory0).getUint8(ret + 0, true)) {
+    case 0: {
+      variant5= {
+        tag: 'int-val',
+        val: dataView(memory0).getInt32(ret + 4, true)
+      };
+      break;
+    }
+    case 1: {
+      variant5= {
+        tag: 'float-val',
+        val: dataView(memory0).getFloat32(ret + 4, true)
+      };
+      break;
+    }
+    case 2: {
+      var ptr4 = dataView(memory0).getUint32(ret + 4, true);
+      var len4 = dataView(memory0).getUint32(ret + 8, true);
+      var result4 = TEXT_DECODER_UTF8.decode(new Uint8Array(memory0.buffer, ptr4, len4));
+      variant5= {
+        tag: 'str-val',
+        val: result4
+      };
+      break;
+    }
+    case 3: {
+      variant5= {
+        tag: 'null-val',
+      };
+      break;
+    }
+    default: {
+      throw new TypeError('invalid variant discriminant for ArgValue');
+    }
+  }
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="call-function"][Instruction::Return]', {
     funcName: 'call-function',
     paramCount: 1,
     async: false,
@@ -7039,10 +7178,10 @@ function callFunction(arg0, arg1, arg2) {
   return retCopy;
   
 }
-let bridge010SetTracing;
+let bridge020SetTracing;
 
 function setTracing(arg0) {
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="set-tracing"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="set-tracing"][Instruction::CallWasm] enter', {
     funcName: 'set-tracing',
     paramCount: 1,
     async: false,
@@ -7054,7 +7193,7 @@ function setTracing(arg0) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010SetTracing',
+    entryFnName: 'bridge020SetTracing',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -7065,10 +7204,10 @@ function setTracing(arg0) {
   let ret;  _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010SetTracing(arg0 ? 1 : 0),
+    fn: () => bridge020SetTracing(arg0 ? 1 : 0),
   });
   
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="set-tracing"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="set-tracing"][Instruction::Return]', {
     funcName: 'set-tracing',
     paramCount: 0,
     async: false,
@@ -7077,10 +7216,10 @@ function setTracing(arg0) {
   task.resolve([ret]);
   task.exit();
 }
-let bridge010GetPluginName;
+let bridge020GetPluginName;
 
 function getPluginName(arg0) {
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="get-plugin-name"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="get-plugin-name"][Instruction::CallWasm] enter', {
     funcName: 'get-plugin-name',
     paramCount: 1,
     async: false,
@@ -7092,7 +7231,7 @@ function getPluginName(arg0) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010GetPluginName',
+    entryFnName: 'bridge020GetPluginName',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -7105,7 +7244,7 @@ function getPluginName(arg0) {
   let ret =   _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010GetPluginName(toInt32(arg0)),
+    fn: () => bridge020GetPluginName(toInt32(arg0)),
   });
   
   let variant1;
@@ -7125,7 +7264,7 @@ function getPluginName(arg0) {
       throw new TypeError('invalid variant discriminant for option');
     }
   }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="get-plugin-name"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="get-plugin-name"][Instruction::Return]', {
     funcName: 'get-plugin-name',
     paramCount: 1,
     async: false,
@@ -7142,10 +7281,10 @@ function getPluginName(arg0) {
   return retCopy;
   
 }
-let bridge010GetConfigFields;
+let bridge020GetConfigFields;
 
 function getConfigFields(arg0) {
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="get-config-fields"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="get-config-fields"][Instruction::CallWasm] enter', {
     funcName: 'get-config-fields',
     paramCount: 1,
     async: false,
@@ -7157,7 +7296,7 @@ function getConfigFields(arg0) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010GetConfigFields',
+    entryFnName: 'bridge020GetConfigFields',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -7170,7 +7309,7 @@ function getConfigFields(arg0) {
   let ret =   _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010GetConfigFields(toInt32(arg0)),
+    fn: () => bridge020GetConfigFields(toInt32(arg0)),
   });
   
   let variant1;
@@ -7190,7 +7329,7 @@ function getConfigFields(arg0) {
       throw new TypeError('invalid variant discriminant for option');
     }
   }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="get-config-fields"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="get-config-fields"][Instruction::Return]', {
     funcName: 'get-config-fields',
     paramCount: 1,
     async: false,
@@ -7207,15 +7346,15 @@ function getConfigFields(arg0) {
   return retCopy;
   
 }
-let bridge010GetConfigValue;
+let bridge020GetConfigValue;
 
 function getConfigValue(arg0, arg1) {
   
-  var encodeRes = _utf8AllocateAndEncode(arg1, realloc1, memory0);
+  var encodeRes = _utf8AllocateAndEncode(arg1, realloc0, memory0);
   var ptr0= encodeRes.ptr;
   var len0 = encodeRes.len;
   
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="get-config-value"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="get-config-value"][Instruction::CallWasm] enter', {
     funcName: 'get-config-value',
     paramCount: 3,
     async: false,
@@ -7227,7 +7366,7 @@ function getConfigValue(arg0, arg1) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010GetConfigValue',
+    entryFnName: 'bridge020GetConfigValue',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -7240,7 +7379,7 @@ function getConfigValue(arg0, arg1) {
   let ret =   _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010GetConfigValue(toInt32(arg0), ptr0, len0),
+    fn: () => bridge020GetConfigValue(toInt32(arg0), ptr0, len0),
   });
   
   let variant4;
@@ -7288,7 +7427,7 @@ function getConfigValue(arg0, arg1) {
       throw new TypeError('invalid variant discriminant for option');
     }
   }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="get-config-value"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="get-config-value"][Instruction::Return]', {
     funcName: 'get-config-value',
     paramCount: 1,
     async: false,
@@ -7305,11 +7444,11 @@ function getConfigValue(arg0, arg1) {
   return retCopy;
   
 }
-let bridge010SetConfigValue;
+let bridge020SetConfigValue;
 
 function setConfigValue(arg0, arg1, arg2) {
   
-  var encodeRes = _utf8AllocateAndEncode(arg1, realloc1, memory0);
+  var encodeRes = _utf8AllocateAndEncode(arg1, realloc0, memory0);
   var ptr0= encodeRes.ptr;
   var len0 = encodeRes.len;
   
@@ -7335,7 +7474,7 @@ function setConfigValue(arg0, arg1, arg2) {
     case 'str-val': {
       const e = variant2.val;
       
-      var encodeRes = _utf8AllocateAndEncode(e, realloc1, memory0);
+      var encodeRes = _utf8AllocateAndEncode(e, realloc0, memory0);
       var ptr1= encodeRes.ptr;
       var len1 = encodeRes.len;
       
@@ -7348,7 +7487,7 @@ function setConfigValue(arg0, arg1, arg2) {
       throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant2.tag)}\` (received \`${variant2}\`) specified for \`ConfigValue\``);
     }
   }
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="set-config-value"][Instruction::CallWasm] enter', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="set-config-value"][Instruction::CallWasm] enter', {
     funcName: 'set-config-value',
     paramCount: 6,
     async: false,
@@ -7360,7 +7499,7 @@ function setConfigValue(arg0, arg1, arg2) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010SetConfigValue',
+    entryFnName: 'bridge020SetConfigValue',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -7373,11 +7512,11 @@ function setConfigValue(arg0, arg1, arg2) {
   let ret =   _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010SetConfigValue(toInt32(arg0), ptr0, len0, variant2_0, variant2_1, variant2_2),
+    fn: () => bridge020SetConfigValue(toInt32(arg0), ptr0, len0, variant2_0, variant2_1, variant2_2),
   });
   
   var bool3 = ret;
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="set-config-value"][Instruction::Return]', {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="set-config-value"][Instruction::Return]', {
     funcName: 'set-config-value',
     paramCount: 1,
     async: false,
@@ -7387,11 +7526,191 @@ function setConfigValue(arg0, arg1, arg2) {
   task.exit();
   return bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool());
 }
-let bridge010EnableDriverScope;
+let bridge020GetGlobalValue;
 
-function enableDriverScope(arg0) {
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="enable-driver-scope"][Instruction::CallWasm] enter', {
-    funcName: 'enable-driver-scope',
+function getGlobalValue(arg0, arg1) {
+  
+  var encodeRes = _utf8AllocateAndEncode(arg1, realloc0, memory0);
+  var ptr0= encodeRes.ptr;
+  var len0 = encodeRes.len;
+  
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="get-global-value"][Instruction::CallWasm] enter', {
+    funcName: 'get-global-value',
+    paramCount: 3,
+    async: false,
+    postReturn: true,
+  });
+  const hostProvided = false;
+  
+  const [task, _wasm_call_currentTaskID] = createNewCurrentTask({
+    componentIdx: 0,
+    isAsync: false,
+    isManualAsync: false,
+    entryFnName: 'bridge020GetGlobalValue',
+    getCallbackFn: () => null,
+    callbackFnName: 'null',
+    errHandling: 'none',
+    callingWasmExport: true,
+  });
+  
+  const started = task.enterSync();
+  task.setReturnMemoryIdx(0);
+  task.setReturnMemory(memory0);
+  let ret =   _withGlobalCurrentTaskMeta({
+    taskID: task.id(),
+    componentIdx: task.componentIdx(),
+    fn: () => bridge020GetGlobalValue(toInt32(arg0), ptr0, len0),
+  });
+  
+  let variant4;
+  switch (dataView(memory0).getUint8(ret + 0, true)) {
+    case 0: {
+      variant4 = undefined;
+      break;
+    }
+    case 1: {
+      let variant3;
+      switch (dataView(memory0).getUint8(ret + 4, true)) {
+        case 0: {
+          var bool1 = dataView(memory0).getUint8(ret + 8, true);
+          variant3= {
+            tag: 'bool-val',
+            val: bool1 == 0 ? false : (bool1 == 1 ? true : throwInvalidBool())
+          };
+          break;
+        }
+        case 1: {
+          variant3= {
+            tag: 'int-val',
+            val: dataView(memory0).getInt32(ret + 8, true)
+          };
+          break;
+        }
+        case 2: {
+          var ptr2 = dataView(memory0).getUint32(ret + 8, true);
+          var len2 = dataView(memory0).getUint32(ret + 12, true);
+          var result2 = TEXT_DECODER_UTF8.decode(new Uint8Array(memory0.buffer, ptr2, len2));
+          variant3= {
+            tag: 'str-val',
+            val: result2
+          };
+          break;
+        }
+        default: {
+          throw new TypeError('invalid variant discriminant for ConfigValue');
+        }
+      }
+      variant4 = variant3;
+      break;
+    }
+    default: {
+      throw new TypeError('invalid variant discriminant for option');
+    }
+  }
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="get-global-value"][Instruction::Return]', {
+    funcName: 'get-global-value',
+    paramCount: 1,
+    async: false,
+    postReturn: true
+  });
+  task.resolve([variant4]);
+  const retCopy = variant4;
+  
+  let cstate = getOrCreateAsyncState(0);
+  cstate.mayLeave = false;
+  postReturn6(ret);
+  cstate.mayLeave = true;
+  task.exit();
+  return retCopy;
+  
+}
+let bridge020SetGlobalValue;
+
+function setGlobalValue(arg0, arg1, arg2) {
+  
+  var encodeRes = _utf8AllocateAndEncode(arg1, realloc0, memory0);
+  var ptr0= encodeRes.ptr;
+  var len0 = encodeRes.len;
+  
+  var variant2 = arg2;
+  let variant2_0;
+  let variant2_1;
+  let variant2_2;
+  switch (variant2.tag) {
+    case 'bool-val': {
+      const e = variant2.val;
+      variant2_0 = 0;
+      variant2_1 = e ? 1 : 0;
+      variant2_2 = 0;
+      break;
+    }
+    case 'int-val': {
+      const e = variant2.val;
+      variant2_0 = 1;
+      variant2_1 = toInt32(e);
+      variant2_2 = 0;
+      break;
+    }
+    case 'str-val': {
+      const e = variant2.val;
+      
+      var encodeRes = _utf8AllocateAndEncode(e, realloc0, memory0);
+      var ptr1= encodeRes.ptr;
+      var len1 = encodeRes.len;
+      
+      variant2_0 = 2;
+      variant2_1 = ptr1;
+      variant2_2 = len1;
+      break;
+    }
+    default: {
+      throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant2.tag)}\` (received \`${variant2}\`) specified for \`ConfigValue\``);
+    }
+  }
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="set-global-value"][Instruction::CallWasm] enter', {
+    funcName: 'set-global-value',
+    paramCount: 6,
+    async: false,
+    postReturn: false,
+  });
+  const hostProvided = false;
+  
+  const [task, _wasm_call_currentTaskID] = createNewCurrentTask({
+    componentIdx: 0,
+    isAsync: false,
+    isManualAsync: false,
+    entryFnName: 'bridge020SetGlobalValue',
+    getCallbackFn: () => null,
+    callbackFnName: 'null',
+    errHandling: 'none',
+    callingWasmExport: true,
+  });
+  
+  const started = task.enterSync();
+  task.setReturnMemoryIdx(0);
+  task.setReturnMemory(memory0);
+  let ret =   _withGlobalCurrentTaskMeta({
+    taskID: task.id(),
+    componentIdx: task.componentIdx(),
+    fn: () => bridge020SetGlobalValue(toInt32(arg0), ptr0, len0, variant2_0, variant2_1, variant2_2),
+  });
+  
+  var bool3 = ret;
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="set-global-value"][Instruction::Return]', {
+    funcName: 'set-global-value',
+    paramCount: 1,
+    async: false,
+    postReturn: false
+  });
+  task.resolve([bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool())]);
+  task.exit();
+  return bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool());
+}
+let bridge020ResetGlobals;
+
+function resetGlobals(arg0) {
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="reset-globals"][Instruction::CallWasm] enter', {
+    funcName: 'reset-globals',
     paramCount: 1,
     async: false,
     postReturn: false,
@@ -7402,7 +7721,7 @@ function enableDriverScope(arg0) {
     componentIdx: 0,
     isAsync: false,
     isManualAsync: false,
-    entryFnName: 'bridge010EnableDriverScope',
+    entryFnName: 'bridge020ResetGlobals',
     getCallbackFn: () => null,
     callbackFnName: 'null',
     errHandling: 'none',
@@ -7413,12 +7732,12 @@ function enableDriverScope(arg0) {
   let ret =   _withGlobalCurrentTaskMeta({
     taskID: task.id(),
     componentIdx: task.componentIdx(),
-    fn: () => bridge010EnableDriverScope(toInt32(arg0)),
+    fn: () => bridge020ResetGlobals(toInt32(arg0)),
   });
   
   var bool0 = ret;
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="enable-driver-scope"][Instruction::Return]', {
-    funcName: 'enable-driver-scope',
+  _debugLog('[iface="mtp:core/bridge@0.2.0", function="reset-globals"][Instruction::Return]', {
+    funcName: 'reset-globals',
     paramCount: 1,
     async: false,
     postReturn: false
@@ -7426,44 +7745,6 @@ function enableDriverScope(arg0) {
   task.resolve([bool0 == 0 ? false : (bool0 == 1 ? true : throwInvalidBool())]);
   task.exit();
   return bool0 == 0 ? false : (bool0 == 1 ? true : throwInvalidBool());
-}
-let bridge010DisableDriverScope;
-
-function disableDriverScope(arg0) {
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="disable-driver-scope"][Instruction::CallWasm] enter', {
-    funcName: 'disable-driver-scope',
-    paramCount: 1,
-    async: false,
-    postReturn: false,
-  });
-  const hostProvided = false;
-  
-  const [task, _wasm_call_currentTaskID] = createNewCurrentTask({
-    componentIdx: 0,
-    isAsync: false,
-    isManualAsync: false,
-    entryFnName: 'bridge010DisableDriverScope',
-    getCallbackFn: () => null,
-    callbackFnName: 'null',
-    errHandling: 'none',
-    callingWasmExport: true,
-  });
-  
-  const started = task.enterSync();
-  let ret;  _withGlobalCurrentTaskMeta({
-    taskID: task.id(),
-    componentIdx: task.componentIdx(),
-    fn: () => bridge010DisableDriverScope(toInt32(arg0)),
-  });
-  
-  _debugLog('[iface="mtp:core/bridge@0.1.0", function="disable-driver-scope"][Instruction::Return]', {
-    funcName: 'disable-driver-scope',
-    paramCount: 0,
-    async: false,
-    postReturn: false
-  });
-  task.resolve([ret]);
-  task.exit();
 }
 let trampoline0 = _trampoline0.manuallyAsync ? new WebAssembly.Suspending(_lowerImportBackwardsCompat.bind(
 null,
@@ -7752,7 +8033,11 @@ null,
     elemAlign32: 4,
     elemSize32: 12,
   })],
-  resultLowerFns: [_lowerFlatS32],
+  resultLowerFns: [_lowerFlatRecord([['value', _lowerFlatVariant([[ 'int-val', _lowerFlatS32, 12, 4, 4 ],[ 'float-val', _lowerFlatFloat32, 12, 4, 4 ],[ 'str-val', _lowerFlatStringAny, 12, 4, 4 ],[ 'null-val', null, 12, 4, 4 ],]), 28, 4 ],['error', _lowerFlatOption([
+  [ 'none', null, 16, 4, 4 ],
+  [ 'some', _lowerFlatRecord([['kind', _lowerFlatEnum([['unknown', null, 1, 1, 1],['var-not-set', null, 1, 1, 1],['cycle-detected', null, 1, 1, 1],['missing-return', null, 1, 1, 1],['arg-count-mismatch', null, 1, 1, 1],['missing-arg', null, 1, 1, 1],['unknown-arg', null, 1, 1, 1],['type-mismatch', null, 1, 1, 1],['host-dispatch-failed', null, 1, 1, 1],]), 12, 4 ],['message', _lowerFlatStringAny, 12, 4 ],]), 16, 4, 4 ],
+  ])
+  , 28, 4 ],])],
   funcTypeIsAsync: false,
   getCallbackFn: () => null,
   getPostReturnFn: () => null,
@@ -7760,7 +8045,7 @@ null,
   memoryIdx: 0,
   stringEncoding: 'utf8',
   getMemoryFn: () => memory0,
-  getReallocFn: () => null,
+  getReallocFn: () => realloc0,
   importFn: _trampoline10,
 },
 )) : _lowerImportBackwardsCompat.bind(
@@ -7775,7 +8060,11 @@ null,
     elemAlign32: 4,
     elemSize32: 12,
   })],
-  resultLowerFns: [_lowerFlatS32],
+  resultLowerFns: [_lowerFlatRecord([['value', _lowerFlatVariant([[ 'int-val', _lowerFlatS32, 12, 4, 4 ],[ 'float-val', _lowerFlatFloat32, 12, 4, 4 ],[ 'str-val', _lowerFlatStringAny, 12, 4, 4 ],[ 'null-val', null, 12, 4, 4 ],]), 28, 4 ],['error', _lowerFlatOption([
+  [ 'none', null, 16, 4, 4 ],
+  [ 'some', _lowerFlatRecord([['kind', _lowerFlatEnum([['unknown', null, 1, 1, 1],['var-not-set', null, 1, 1, 1],['cycle-detected', null, 1, 1, 1],['missing-return', null, 1, 1, 1],['arg-count-mismatch', null, 1, 1, 1],['missing-arg', null, 1, 1, 1],['unknown-arg', null, 1, 1, 1],['type-mismatch', null, 1, 1, 1],['host-dispatch-failed', null, 1, 1, 1],]), 12, 4 ],['message', _lowerFlatStringAny, 12, 4 ],]), 16, 4, 4 ],
+  ])
+  , 28, 4 ],])],
   funcTypeIsAsync: false,
   getCallbackFn: () => null,
   getPostReturnFn: () => null,
@@ -7783,7 +8072,7 @@ null,
   memoryIdx: 0,
   stringEncoding: 'utf8',
   getMemoryFn: () => memory0,
-  getReallocFn: () => null,
+  getReallocFn: () => realloc0,
   importFn: _trampoline10,
 },
 );
@@ -7794,7 +8083,7 @@ null,
   componentIdx: 0,
   isAsync: false,
   isManualAsync: _trampoline11.manuallyAsync,
-  paramLiftFns: [_liftFlatS32,_liftFlatEnum([['action-enter', null, 1, 1, 1],['action-exit', null, 1, 1, 1],]),_liftFlatStringAny,_liftFlatS32],
+  paramLiftFns: [_liftFlatS32,_liftFlatEnum([['action-enter', null, 1, 1, 1],['action-exit', null, 1, 1, 1],['event-enter', null, 1, 1, 1],['event-exit', null, 1, 1, 1],['fn-enter', null, 1, 1, 1],['fn-exit', null, 1, 1, 1],['cond-eval', null, 1, 1, 1],['loop-iter', null, 1, 1, 1],['note', null, 1, 1, 1],['error', null, 1, 1, 1],]),_liftFlatStringAny,_liftFlatS32],
   resultLowerFns: [],
   funcTypeIsAsync: false,
   getCallbackFn: () => null,
@@ -7813,7 +8102,7 @@ null,
   componentIdx: 0,
   isAsync: false,
   isManualAsync: _trampoline11.manuallyAsync,
-  paramLiftFns: [_liftFlatS32,_liftFlatEnum([['action-enter', null, 1, 1, 1],['action-exit', null, 1, 1, 1],]),_liftFlatStringAny,_liftFlatS32],
+  paramLiftFns: [_liftFlatS32,_liftFlatEnum([['action-enter', null, 1, 1, 1],['action-exit', null, 1, 1, 1],['event-enter', null, 1, 1, 1],['event-exit', null, 1, 1, 1],['fn-enter', null, 1, 1, 1],['fn-exit', null, 1, 1, 1],['cond-eval', null, 1, 1, 1],['loop-iter', null, 1, 1, 1],['note', null, 1, 1, 1],['error', null, 1, 1, 1],]),_liftFlatStringAny,_liftFlatS32],
   resultLowerFns: [],
   funcTypeIsAsync: false,
   getCallbackFn: () => null,
@@ -7885,7 +8174,7 @@ null,
   memoryIdx: 0,
   stringEncoding: 'utf8',
   getMemoryFn: () => memory0,
-  getReallocFn: () => realloc0,
+  getReallocFn: () => realloc1,
   importFn: _trampoline13,
 },
 )) : _lowerImportBackwardsCompat.bind(
@@ -7908,7 +8197,7 @@ null,
   memoryIdx: 0,
   stringEncoding: 'utf8',
   getMemoryFn: () => memory0,
-  getReallocFn: () => realloc0,
+  getReallocFn: () => realloc1,
   importFn: _trampoline13,
 },
 );
@@ -8434,7 +8723,7 @@ null,
   memoryIdx: 0,
   stringEncoding: 'utf8',
   getMemoryFn: () => memory0,
-  getReallocFn: () => realloc0,
+  getReallocFn: () => realloc1,
   importFn: _trampoline23,
 },
 )) : _lowerImportBackwardsCompat.bind(
@@ -8460,14 +8749,14 @@ null,
   memoryIdx: 0,
   stringEncoding: 'utf8',
   getMemoryFn: () => memory0,
-  getReallocFn: () => realloc0,
+  getReallocFn: () => realloc1,
   importFn: _trampoline23,
 },
 );
 Promise.all([module0, module1, module2, module3]).catch(() => {});
 ({ exports: exports0 } = yield instantiateCore(yield module2));
 ({ exports: exports1 } = yield instantiateCore(yield module0, {
-  'mtp:core/host-callbacks@0.1.0': {
+  'mtp:core/host-callbacks@0.2.0': {
     'config-save': trampoline0,
     'error-report': exports0['2'],
     'host-dispatch': exports0['0'],
@@ -8529,12 +8818,20 @@ Promise.all([module0, module1, module2, module3]).catch(() => {});
   },
 }));
 memory0 = exports1.memory;
-realloc0 = exports2.cabi_import_realloc;
+realloc0 = exports1.cabi_realloc;
 
 try {
-  realloc0Async = WebAssembly.promising(exports2.cabi_import_realloc);
+  realloc0Async = WebAssembly.promising(exports1.cabi_realloc);
 } catch(err) {
-  realloc0Async = exports2.cabi_import_realloc;
+  realloc0Async = exports1.cabi_realloc;
+}
+
+realloc1 = exports2.cabi_import_realloc;
+
+try {
+  realloc1Async = WebAssembly.promising(exports2.cabi_import_realloc);
+} catch(err) {
+  realloc1Async = exports2.cabi_import_realloc;
 }
 
 ({ exports: exports3 } = yield instantiateCore(yield module3, {
@@ -8562,97 +8859,99 @@ try {
     '9': trampoline13,
   },
 }));
-realloc1 = exports1.cabi_realloc;
+postReturn0 = exports1['cabi_post_mtp:core/bridge@0.2.0#load-plugin'];
 
 try {
-  realloc1Async = WebAssembly.promising(exports1.cabi_realloc);
+  postReturn0Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.2.0#load-plugin']);
 } catch(err) {
-  realloc1Async = exports1.cabi_realloc;
+  postReturn0Async = exports1['cabi_post_mtp:core/bridge@0.2.0#load-plugin'];
 }
 
-postReturn0 = exports1['cabi_post_mtp:core/bridge@0.1.0#load-plugin'];
+postReturn1 = exports1['cabi_post_mtp:core/bridge@0.2.0#fire-event'];
 
 try {
-  postReturn0Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.1.0#load-plugin']);
+  postReturn1Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.2.0#fire-event']);
 } catch(err) {
-  postReturn0Async = exports1['cabi_post_mtp:core/bridge@0.1.0#load-plugin'];
+  postReturn1Async = exports1['cabi_post_mtp:core/bridge@0.2.0#fire-event'];
 }
 
-postReturn1 = exports1['cabi_post_mtp:core/bridge@0.1.0#fire-event'];
+postReturn2 = exports1['cabi_post_mtp:core/bridge@0.2.0#call-function'];
 
 try {
-  postReturn1Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.1.0#fire-event']);
+  postReturn2Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.2.0#call-function']);
 } catch(err) {
-  postReturn1Async = exports1['cabi_post_mtp:core/bridge@0.1.0#fire-event'];
+  postReturn2Async = exports1['cabi_post_mtp:core/bridge@0.2.0#call-function'];
 }
 
-postReturn2 = exports1['cabi_post_mtp:core/bridge@0.1.0#call-function'];
+postReturn3 = exports1['cabi_post_mtp:core/bridge@0.2.0#get-plugin-name'];
 
 try {
-  postReturn2Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.1.0#call-function']);
+  postReturn3Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.2.0#get-plugin-name']);
 } catch(err) {
-  postReturn2Async = exports1['cabi_post_mtp:core/bridge@0.1.0#call-function'];
+  postReturn3Async = exports1['cabi_post_mtp:core/bridge@0.2.0#get-plugin-name'];
 }
 
-postReturn3 = exports1['cabi_post_mtp:core/bridge@0.1.0#get-plugin-name'];
+postReturn4 = exports1['cabi_post_mtp:core/bridge@0.2.0#get-config-fields'];
 
 try {
-  postReturn3Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.1.0#get-plugin-name']);
+  postReturn4Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.2.0#get-config-fields']);
 } catch(err) {
-  postReturn3Async = exports1['cabi_post_mtp:core/bridge@0.1.0#get-plugin-name'];
+  postReturn4Async = exports1['cabi_post_mtp:core/bridge@0.2.0#get-config-fields'];
 }
 
-postReturn4 = exports1['cabi_post_mtp:core/bridge@0.1.0#get-config-fields'];
+postReturn5 = exports1['cabi_post_mtp:core/bridge@0.2.0#get-config-value'];
 
 try {
-  postReturn4Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.1.0#get-config-fields']);
+  postReturn5Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.2.0#get-config-value']);
 } catch(err) {
-  postReturn4Async = exports1['cabi_post_mtp:core/bridge@0.1.0#get-config-fields'];
+  postReturn5Async = exports1['cabi_post_mtp:core/bridge@0.2.0#get-config-value'];
 }
 
-postReturn5 = exports1['cabi_post_mtp:core/bridge@0.1.0#get-config-value'];
+postReturn6 = exports1['cabi_post_mtp:core/bridge@0.2.0#get-global-value'];
 
 try {
-  postReturn5Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.1.0#get-config-value']);
+  postReturn6Async = WebAssembly.promising(exports1['cabi_post_mtp:core/bridge@0.2.0#get-global-value']);
 } catch(err) {
-  postReturn5Async = exports1['cabi_post_mtp:core/bridge@0.1.0#get-config-value'];
+  postReturn6Async = exports1['cabi_post_mtp:core/bridge@0.2.0#get-global-value'];
 }
 
-bridge010Init = exports1['mtp:core/bridge@0.1.0#init'];
-bridge010LoadPlugin = exports1['mtp:core/bridge@0.1.0#load-plugin'];
-bridge010FreePlugin = exports1['mtp:core/bridge@0.1.0#free-plugin'];
-bridge010SetPluginConfig = exports1['mtp:core/bridge@0.1.0#set-plugin-config'];
-bridge010RegisterHostFunction = exports1['mtp:core/bridge@0.1.0#register-host-function'];
-bridge010RegisterEvent = exports1['mtp:core/bridge@0.1.0#register-event'];
-bridge010FireEvent = exports1['mtp:core/bridge@0.1.0#fire-event'];
-bridge010CallFunction = exports1['mtp:core/bridge@0.1.0#call-function'];
-bridge010SetTracing = exports1['mtp:core/bridge@0.1.0#set-tracing'];
-bridge010GetPluginName = exports1['mtp:core/bridge@0.1.0#get-plugin-name'];
-bridge010GetConfigFields = exports1['mtp:core/bridge@0.1.0#get-config-fields'];
-bridge010GetConfigValue = exports1['mtp:core/bridge@0.1.0#get-config-value'];
-bridge010SetConfigValue = exports1['mtp:core/bridge@0.1.0#set-config-value'];
-bridge010EnableDriverScope = exports1['mtp:core/bridge@0.1.0#enable-driver-scope'];
-bridge010DisableDriverScope = exports1['mtp:core/bridge@0.1.0#disable-driver-scope'];
-const bridge010 = {
+bridge020Init = exports1['mtp:core/bridge@0.2.0#init'];
+bridge020LoadPlugin = exports1['mtp:core/bridge@0.2.0#load-plugin'];
+bridge020FreePlugin = exports1['mtp:core/bridge@0.2.0#free-plugin'];
+bridge020SetPluginConfig = exports1['mtp:core/bridge@0.2.0#set-plugin-config'];
+bridge020RegisterHostFunction = exports1['mtp:core/bridge@0.2.0#register-host-function'];
+bridge020RegisterEvent = exports1['mtp:core/bridge@0.2.0#register-event'];
+bridge020FireEvent = exports1['mtp:core/bridge@0.2.0#fire-event'];
+bridge020CallFunction = exports1['mtp:core/bridge@0.2.0#call-function'];
+bridge020SetTracing = exports1['mtp:core/bridge@0.2.0#set-tracing'];
+bridge020GetPluginName = exports1['mtp:core/bridge@0.2.0#get-plugin-name'];
+bridge020GetConfigFields = exports1['mtp:core/bridge@0.2.0#get-config-fields'];
+bridge020GetConfigValue = exports1['mtp:core/bridge@0.2.0#get-config-value'];
+bridge020SetConfigValue = exports1['mtp:core/bridge@0.2.0#set-config-value'];
+bridge020GetGlobalValue = exports1['mtp:core/bridge@0.2.0#get-global-value'];
+bridge020SetGlobalValue = exports1['mtp:core/bridge@0.2.0#set-global-value'];
+bridge020ResetGlobals = exports1['mtp:core/bridge@0.2.0#reset-globals'];
+const bridge020 = {
   callFunction: callFunction,
-  disableDriverScope: disableDriverScope,
-  enableDriverScope: enableDriverScope,
   fireEvent: fireEvent,
   freePlugin: freePlugin,
   getConfigFields: getConfigFields,
   getConfigValue: getConfigValue,
+  getGlobalValue: getGlobalValue,
   getPluginName: getPluginName,
   init: init,
   loadPlugin: loadPlugin,
   registerEvent: registerEvent,
   registerHostFunction: registerHostFunction,
+  resetGlobals: resetGlobals,
   setConfigValue: setConfigValue,
+  setGlobalValue: setGlobalValue,
   setPluginConfig: setPluginConfig,
   setTracing: setTracing,
   
 };
 
-return { bridge: bridge010, 'mtp:core/bridge@0.1.0': bridge010,  };
+return { bridge: bridge020, 'mtp:core/bridge@0.2.0': bridge020,  };
 })();
 let promise, resolve, reject;
 function runNext (value) {
