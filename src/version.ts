@@ -19,6 +19,8 @@ export interface SemVer {
   patch: number;
   /** Number of segments originally specified (2 for "2.0", 3 for "2.0.1") */
   segments: 2 | 3;
+  /** Pre-release or build metadata (e.g. "alpha", "beta", "rc.1") */
+  release?: string[];
 }
 
 export interface ParsedConstraint {
@@ -31,7 +33,8 @@ export interface ParsedConstraint {
  * Two-segment versions have patch = 0 but segments = 2.
  */
 export function parseVersion(version: string): SemVer {
-  const parts = version.trim().split(".");
+  const [version_part, ...release] = version.trim().split("-");
+  const parts = (version_part ?? "").trim().split(".");
 
   if (parts.length < 2 || parts.length > 3) {
     throw new Error(`Invalid version format: "${version}" (expected MAJOR.MINOR or MAJOR.MINOR.PATCH)`);
@@ -45,7 +48,7 @@ export function parseVersion(version: string): SemVer {
     throw new Error(`Invalid version format: "${version}" (non-integer component)`);
   }
 
-  return { major, minor, patch, segments: parts.length as 2 | 3 };
+  return { major, minor, patch, segments: parts.length as 2 | 3, release };
 }
 
 /**
