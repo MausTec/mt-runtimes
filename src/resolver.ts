@@ -4,6 +4,8 @@
  * Resolves @sdk_version and @platforms metadata into a concrete RuntimeBundle
  * that the linker can validate against.
  */
+import { readFileSync } from "node:fs";
+import { resolve as resolvePath } from "node:path";
 import type {
   AliasTable,
   ApiDescriptor,
@@ -59,10 +61,23 @@ function loadProductApiDescriptor(product: string, version: string): ApiDescript
 // ---------------------------------------------------------------------------
 
 /**
- * Parse a single @platforms array entry like "@eom ~> 2.0" or "eom3k == 2.0.1".
+ * Parse a single @platforms array entry like "@eom ~> 2.0", "eom3k == 2.0.1",
+ * or "file:../local/plugin-api.json" (a local dev override, loaded directly
+ * from disk instead of the published catalog).
  */
 export function parsePlatformEntry(raw: string): ParsedPlatformEntry {
   const trimmed = raw.trim();
+
+  // `file:` entries take the entire remainder as a literal path
+  if (trimmed.startsWith("file:")) {
+    return {
+      raw: trimmed,
+      identifier: trimmed,
+      constraint: null,
+      isFamily: false,
+      isFile: true,
+    };
+  }
 
   // Split on first whitespace to separate identifier from constraint
   const spaceIdx = trimmed.indexOf(" ");
@@ -72,6 +87,7 @@ export function parsePlatformEntry(raw: string): ParsedPlatformEntry {
       identifier: trimmed,
       constraint: null,
       isFamily: trimmed.startsWith("@"),
+      isFile: false,
     };
   }
 
@@ -83,6 +99,7 @@ export function parsePlatformEntry(raw: string): ParsedPlatformEntry {
     identifier,
     constraint: constraint.length > 0 ? constraint : null,
     isFamily: identifier.startsWith("@"),
+    isFile: false,
   };
 }
 
@@ -253,6 +270,11 @@ export interface ResolveOptions {
   platforms?: string[];
   /** SDK version constraint from @sdk_version, e.g. "~> 1.0" */
   sdkVersion?: string | null;
+  /**
+   * Base directory used to resolve relative `file:` platform entries.
+   * Defaults to `process.cwd()`. Ignored for @family/SKU entries.
+   */
+  baseDir?: string;
 }
 
 /**
@@ -294,7 +316,15 @@ export function resolveRuntimeBundle(options: ResolveOptions): RuntimeBundle {
     for (const rawEntry of platformEntries) {
       const entry = parsePlatformEntry(rawEntry);
 
-      if (entry.isFamily) {
+      if (entry.isFile) {
+        const result = resolveFile(entry, options.baseDir ?? process.cwd());
+        if ("error" in result) {
+          errors.push(result.error);
+        } else {
+          descriptors.push(result.descriptor);
+          resolvedPlatforms.push(result.info);
+        }
+      } else if (entry.isFamily) {
         const result = resolveFamily(entry);
         if ("error" in result) {
           errors.push(result.error);
@@ -363,6 +393,64 @@ function resolveSdkVersion(constraint: string | null): ApiDescriptor {
   }
 
   return getMtActionsDescriptor(resolved.version);
+}
+
+/**
+ * Resolve a `file:` platform entry by reading an ApiDescriptor directly from
+ * disk, bypassing the catalog/version machinery entirely. Intended as a
+ * local-dev-only override or for packaging alternate device runtimes with plugins.
+ */
+function resolveFile(entry: ParsedPlatformEntry, baseDir: string): ResolveResult {
+  const rawPath = entry.raw.slice("file:".length).trim();
+
+  if (!rawPath) {
+    return { error: `Empty path in platform entry "${entry.raw}"` };
+  }
+
+  const absolutePath = resolvePath(baseDir, rawPath);
+
+  let contents: string;
+  try {
+    contents = readFileSync(absolutePath, "utf-8");
+  } catch {
+    return { error: `Cannot read platform file "${absolutePath}" (from "${entry.raw}")` };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(contents);
+  } catch (e) {
+    return {
+      error: `Invalid JSON in platform file "${absolutePath}": ${(e as Error).message}`,
+    };
+  }
+
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    !Array.isArray((parsed as ApiDescriptor).functions)
+  ) {
+    return {
+      error: `Platform file "${absolutePath}" is not a valid API descriptor (missing "functions" array)`,
+    };
+  }
+
+  const descriptor = parsed as ApiDescriptor;
+
+  for (const fn of descriptor.functions) fn.origin = `file:${absolutePath}`;
+  for (const ev of descriptor.events) ev.origin = `file:${absolutePath}`;
+
+  return {
+    descriptor,
+    info: {
+      identifier: entry.raw,
+      isFamily: false,
+      isFile: true,
+      resolvedPath: absolutePath,
+      resolvedVersion: descriptor.version ?? "local",
+      source: absolutePath,
+    },
+  };
 }
 
 function resolveFamily(entry: ParsedPlatformEntry): ResolveResult {

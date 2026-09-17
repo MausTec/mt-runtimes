@@ -11,12 +11,12 @@ import {
 describe("parseVersion", () => {
   it("parses 3-segment version", () => {
     const v = parseVersion("2.0.1");
-    expect(v).toEqual({ major: 2, minor: 0, patch: 1, segments: 3 });
+    expect(v).toEqual({ major: 2, minor: 0, patch: 1, release: [], segments: 3 });
   });
 
   it("parses 2-segment version", () => {
     const v = parseVersion("2.0");
-    expect(v).toEqual({ major: 2, minor: 0, patch: 0, segments: 2 });
+    expect(v).toEqual({ major: 2, minor: 0, patch: 0, release: [], segments: 2 });
   });
 
   it("rejects 1-segment version", () => {
@@ -32,13 +32,13 @@ describe("parseConstraint", () => {
   it("parses ~> with 2 segments", () => {
     const c = parseConstraint("~> 2.0");
     expect(c.op).toBe("~>");
-    expect(c.version).toEqual({ major: 2, minor: 0, patch: 0, segments: 2 });
+    expect(c.version).toEqual({ major: 2, minor: 0, patch: 0, release: [], segments: 2 });
   });
 
   it("parses ~> with 3 segments", () => {
     const c = parseConstraint("~> 2.0.1");
     expect(c.op).toBe("~>");
-    expect(c.version).toEqual({ major: 2, minor: 0, patch: 1, segments: 3 });
+    expect(c.version).toEqual({ major: 2, minor: 0, patch: 1, release: [], segments: 3 });
   });
 
   it("parses == constraint", () => {
@@ -55,7 +55,7 @@ describe("parseConstraint", () => {
   it("bare version becomes ==", () => {
     const c = parseConstraint("2.0.1");
     expect(c.op).toBe("==");
-    expect(c.version).toEqual({ major: 2, minor: 0, patch: 1, segments: 3 });
+    expect(c.version).toEqual({ major: 2, minor: 0, patch: 1, release: [], segments: 3 });
   });
 });
 

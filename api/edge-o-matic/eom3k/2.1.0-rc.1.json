@@ -1,0 +1,415 @@
+{
+  "$schema": "https://schemas.maus-tec.com/plugin-api/v1.3.0/plugin-api.json",
+  "product": "edge-o-matic",
+  "version": "2.1.0-rc.1",
+  "functions": [
+    {
+      "name": "get_arousal",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Read the current (pull-based) arousal value. Complements the reactive arousal_change event.",
+      "returns": {
+        "type": "int",
+        "description": "Current arousal value"
+      }
+    },
+    {
+      "name": "get_pressure",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Read the most recent raw pressure sensor reading.",
+      "returns": {
+        "type": "int",
+        "description": "Most recent raw pressure reading"
+      }
+    },
+    {
+      "name": "get_pressure_average",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Read the smoothed/averaged pressure reading.",
+      "returns": {
+        "type": "int",
+        "description": "Averaged pressure reading"
+      }
+    },
+    {
+      "name": "get_arousal_threshold",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Read the configured arousal (sensitivity) threshold.",
+      "returns": {
+        "type": "int",
+        "description": "Current sensitivity threshold"
+      }
+    },
+    {
+      "name": "set_arousal_threshold",
+      "module": "arousal",
+      "permission": "arousal:write",
+      "description": "Set the arousal (sensitivity) threshold.",
+      "args": [
+        {
+          "name": "threshold",
+          "type": "int",
+          "description": "New threshold value (floored to 10 by firmware)"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "increment_arousal_threshold",
+      "module": "arousal",
+      "permission": "arousal:write",
+      "description": "Increment the arousal (sensitivity) threshold by a relative amount.",
+      "args": [
+        {
+          "name": "amount",
+          "type": "int",
+          "description": "Amount to add (may be negative)"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "ble_write",
+      "module": "ble",
+      "permission": "ble:write",
+      "description": "Write data to a BLE GATT characteristic (with response).",
+      "args": [
+        {
+          "name": "data",
+          "type": "any",
+          "description": "Data to send (string or byte array)"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "ble_write_no_response",
+      "module": "ble",
+      "permission": "ble:write",
+      "description": "Write data to a BLE GATT characteristic (without response).",
+      "args": [
+        {
+          "name": "data",
+          "type": "any",
+          "description": "Data to send (string or byte array)"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "get_system_config",
+      "module": "config",
+      "permission": "syscfg:read",
+      "description": "Read a system configuration value by key. @TODO This should return typed values.",
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Configuration key path"
+        }
+      ],
+      "returns": {
+        "type": "string",
+        "description": "Configuration value as string"
+      }
+    },
+    {
+      "name": "set_system_config",
+      "module": "config",
+      "permission": "syscfg:write",
+      "description": "Write a system configuration value by key.",
+      "args": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Configuration key path"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "New value to set"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "1 if reboot required, 0 otherwise"
+      }
+    },
+    {
+      "name": "get_motor_speed",
+      "module": "motor",
+      "permission": "motor:read",
+      "description": "Read the current commanded motor speed.",
+      "returns": {
+        "type": "int",
+        "description": "Current motor speed (0-255)"
+      }
+    },
+    {
+      "name": "get_output_mode",
+      "module": "motor",
+      "permission": "motor:read",
+      "description": "Read the current output mode.",
+      "returns": {
+        "type": "string",
+        "description": "\"manual\", \"automatic\", or \"plugin\""
+      }
+    },
+    {
+      "name": "request_motor_control",
+      "module": "motor",
+      "permission": "motor:write",
+      "description": "Claim exclusive plugin control of the motor. While held, the firmware's built-in auto-edging state machine stands down and set_motor_speed() becomes effective.",
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "release_motor_control",
+      "module": "motor",
+      "permission": "motor:write",
+      "description": "Release plugin motor control, returning the device to manual mode.",
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "set_motor_speed",
+      "module": "motor",
+      "permission": "motor:write",
+      "description": "Directly set the motor speed. Only takes effect while this plugin holds motor control via request_motor_control().",
+      "args": [
+        {
+          "name": "speed",
+          "type": "int",
+          "description": "Motor speed, clamped to 0-255"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "delay",
+      "module": "system",
+      "permission": null,
+      "description": "Pause plugin execution for a given number of milliseconds.",
+      "args": [
+        {
+          "name": "ms",
+          "type": "int",
+          "description": "Delay duration in milliseconds"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "module": "system",
+      "permission": null,
+      "description": "Log a message to the device console. The plugin name is prepended for identification.",
+      "args": [
+        {
+          "name": "msg",
+          "type": "any",
+          "description": "Message to log (string, int, or float)"
+        }
+      ]
+    },
+    {
+      "name": "random",
+      "module": "system",
+      "permission": null,
+      "description": "Generate a random integer using the hardware RNG. 0 args: raw uint32. 1 arg: [0, hi). 2 args: [lo, hi].",
+      "args": [
+        {
+          "name": "lo",
+          "type": "int",
+          "optional": true,
+          "description": "Lower bound (or upper bound if only one arg)"
+        },
+        {
+          "name": "hi",
+          "type": "int",
+          "optional": true,
+          "description": "Upper bound"
+        }
+      ],
+      "returns": {
+        "type": "int",
+        "description": "Random integer in the specified range"
+      }
+    },
+    {
+      "name": "millis",
+      "module": "system",
+      "permission": null,
+      "description": "Get milliseconds elapsed since device boot. Uses esp_timer_get_time() (microseconds) divided by 1000.",
+      "returns": {
+        "type": "int",
+        "description": "Milliseconds since boot"
+      }
+    },
+    {
+      "name": "set_led_color",
+      "module": "ui",
+      "permission": "ui:led",
+      "description": "Set the rotary encoder's RGB status LED.",
+      "args": [
+        {
+          "name": "r",
+          "type": "int",
+          "description": "Red channel (0-255)"
+        },
+        {
+          "name": "g",
+          "type": "int",
+          "description": "Green channel (0-255)"
+        },
+        {
+          "name": "b",
+          "type": "int",
+          "description": "Blue channel (0-255)"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "notify",
+      "module": "ui",
+      "permission": "ui:notify",
+      "description": "Show a user-visible toast notification on the device screen.",
+      "args": [
+        {
+          "name": "text",
+          "type": "string",
+          "description": "Message to display"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "lock_controls",
+      "module": "ui",
+      "permission": "ui:lock",
+      "description": "Lock all button/encoder input at the UI layer. The only way out is holding BACK+OK for 5s, or a power cycle.",
+      "args": [
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Shown in device logs while locked"
+        }
+      ],
+      "returns": {
+        "type": "void"
+      }
+    },
+    {
+      "name": "unlock_controls",
+      "module": "ui",
+      "permission": "ui:lock",
+      "description": "Release a lock previously engaged via lock_controls().",
+      "returns": {
+        "type": "void"
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "mode_set",
+      "module": "system",
+      "permission": null,
+      "description": "Fires when the active operating mode changes."
+    },
+    {
+      "name": "speed_change",
+      "module": "system",
+      "permission": null,
+      "description": "Fires when the motor speed changes.",
+      "payload": [
+        {
+          "name": "speed",
+          "type": "int",
+          "description": "New speed value (0-255)"
+        }
+      ]
+    },
+    {
+      "name": "arousal_change",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Fires when the arousal level changes.",
+      "payload": [
+        {
+          "name": "level",
+          "type": "int",
+          "description": "Current arousal percentage (0-100)"
+        }
+      ]
+    },
+    {
+      "name": "orgasm_denial",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Fires when an orgasm is denied (edge detected).",
+      "payload": [
+        {
+          "name": "level",
+          "type": "int",
+          "description": "Arousal level at denial"
+        }
+      ]
+    },
+    {
+      "name": "orgasm_permit",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Fires when arousal breaches the threshold but the vibration mode controller permits continued stimulation instead of denying."
+    },
+    {
+      "name": "edge_start",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Fires when edging starts (near-orgasm detection begins)."
+    },
+    {
+      "name": "orgasm_start",
+      "module": "arousal",
+      "permission": "arousal:read",
+      "description": "Fires when an orgasm begins."
+    },
+    {
+      "name": "connect",
+      "module": "ble",
+      "permission": null,
+      "description": "Fires when a BLE peripheral connects."
+    },
+    {
+      "name": "disconnect",
+      "module": "ble",
+      "permission": null,
+      "description": "Fires when a BLE peripheral disconnects."
+    },
+    {
+      "name": "tick",
+      "module": "system",
+      "permission": null,
+      "description": "Fires on each main loop tick (periodic heartbeat)."
+    }
+  ],
+  "sku": "EOM3K"
+}

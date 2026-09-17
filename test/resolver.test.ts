@@ -1,4 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   resolveRuntimeBundle,
   parsePlatformEntry,
@@ -29,6 +32,7 @@ describe("parsePlatformEntry", () => {
       identifier: "@eom",
       constraint: "~> 2.0",
       isFamily: true,
+      isFile: false,
     });
   });
 
@@ -39,6 +43,7 @@ describe("parsePlatformEntry", () => {
       identifier: "eom3k",
       constraint: "== 2.0.1",
       isFamily: false,
+      isFile: false,
     });
   });
 
@@ -49,6 +54,18 @@ describe("parsePlatformEntry", () => {
       identifier: "@eom",
       constraint: null,
       isFamily: true,
+      isFile: false,
+    });
+  });
+
+  it("parses file: entry, taking the whole remainder as the path", () => {
+    const entry = parsePlatformEntry("file:../local/plugin-api.json");
+    expect(entry).toEqual({
+      raw: "file:../local/plugin-api.json",
+      identifier: "file:../local/plugin-api.json",
+      constraint: null,
+      isFamily: false,
+      isFile: true,
     });
   });
 
@@ -309,6 +326,70 @@ describe("resolveRuntimeBundle", () => {
       expect(() =>
         resolveRuntimeBundle({ platforms: ["eom3k == 99.0.0"] }),
       ).toThrow(ResolutionError);
+    });
+  });
+
+  describe("@platforms file: resolution", () => {
+    function writeTempDescriptor(): { path: string; dir: string } {
+      const dir = mkdtempSync(join(tmpdir(), "mt-runtimes-file-platform-"));
+      const path = join(dir, "local-api.json");
+      writeFileSync(
+        path,
+        JSON.stringify({
+          product: "local-dev",
+          version: "0.0.0-local",
+          functions: [{ name: "local_fn", permission: null }],
+          events: [{ name: "local_event", permission: null }],
+        }),
+      );
+      return { path, dir };
+    }
+
+    it("resolves a file: entry directly from disk", () => {
+      const { path, dir } = writeTempDescriptor();
+      try {
+        const bundle = resolveRuntimeBundle({ platforms: [`file:${path}`] });
+        expect(bundle.resolvedPlatforms).toHaveLength(1);
+        expect(bundle.resolvedPlatforms[0]).toMatchObject({ isFile: true, resolvedPath: path });
+
+        const fnNames = bundle.platformApi!.functions.map((f) => f.name);
+        expect(fnNames).toContain("local_fn");
+        expect(bundle.platformApi!.functions[0]!.origin).toBe(`file:${path}`);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it("resolves a relative file: path against baseDir", () => {
+      const { path, dir } = writeTempDescriptor();
+      try {
+        const bundle = resolveRuntimeBundle({
+          platforms: ["file:local-api.json"],
+          baseDir: dir,
+        });
+        expect(bundle.resolvedPlatforms[0]!.resolvedPath).toBe(path);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it("errors when the file does not exist", () => {
+      expect(() =>
+        resolveRuntimeBundle({ platforms: ["file:/nonexistent/plugin-api.json"] }),
+      ).toThrow(ResolutionError);
+    });
+
+    it("errors on invalid JSON", () => {
+      const dir = mkdtempSync(join(tmpdir(), "mt-runtimes-file-platform-"));
+      const path = join(dir, "bad.json");
+      writeFileSync(path, "not json");
+      try {
+        expect(() => resolveRuntimeBundle({ platforms: [`file:${path}`] })).toThrow(
+          ResolutionError,
+        );
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
     });
   });
 

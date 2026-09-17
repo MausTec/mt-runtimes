@@ -74,13 +74,13 @@ describe("Real-World Scenarios", () => {
       });
 
       const fnNames = bundle.platformApi!.functions.map((f) => f.name);
+
       expect(fnNames).toContain("get_system_config");
       expect(fnNames).toContain("set_system_config");
       expect(fnNames).toContain("ble_write");
-      // All EOM3K functions should be available
-      expect(fnNames).toContain("get_plugin_config");
       expect(fnNames).toContain("delay");
       expect(fnNames).toContain("random");
+      expect(fnNames).toContain("get_motor_speed");
     });
   });
 
