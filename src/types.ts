@@ -95,14 +95,16 @@ export interface AliasTable {
 
 /** A parsed platform entry from @platforms metadata. */
 export interface ParsedPlatformEntry {
-  /** Raw string, e.g. "@eom ~> 2.0" */
+  /** Raw string, e.g. "eom3k ~> 2.0" or "file:../local/plugin-api.json" */
   raw: string;
-  /** The identifier portion, e.g. "@eom" or "eom3k" */
+  /** The identifier portion, e.g. "@eom" or "eom3k" (the whole raw string for file: entries) */
   identifier: string;
-  /** Version constraint or null for "latest current" */
+  /** Version constraint or null for "latest current" (always null for file: entries) */
   constraint: string | null;
   /** True if prefixed with @ (targets a family) */
   isFamily: boolean;
+  /** True if prefixed with `file:` (local dev override, loaded directly from disk) */
+  isFile: boolean;
 }
 
 /** Information about a single resolved platform in the bundle. */
@@ -111,9 +113,13 @@ export interface ResolvedPlatformInfo {
   identifier: string;
   /** Whether this was a family or SKU reference */
   isFamily: boolean;
+  /** True if this was resolved from a `file:` path reference */
+  isFile?: boolean;
+  /** Absolute filesystem path, present only when isFile is true */
+  resolvedPath?: string;
   /** The version that was resolved */
   resolvedVersion: string;
-  /** For families: the family name. For SKUs: the SKU. */
+  /** For families: the family name. For SKUs: the SKU. For files: the absolute path. */
   source: string;
 }
 
