@@ -10,6 +10,9 @@ import _file4 from "../../api/edge-o-matic/1.0.0.json" with { type: "json" };
 import _file5 from "../../api/edge-o-matic/2.0.1.json" with { type: "json" };
 import _file6 from "../../api/edge-o-matic/eom3k/2.0.1.json" with { type: "json" };
 import _file7 from "../../api/edge-o-matic/eom3k/2.0.2.json" with { type: "json" };
+import _file8 from "../../api/edge-o-matic/eom3k/2.0.3.json" with { type: "json" };
+import _file9 from "../../api/edge-o-matic/eom3k/2.0.4.json" with { type: "json" };
+import _file10 from "../../api/edge-o-matic/eom3k/2.1.0-rc.1.json" with { type: "json" };
 
 /**
  * Static map of all api/ JSON files, keyed by path relative to api/.
@@ -25,4 +28,7 @@ export const apiBundle: Record<string, unknown> = {
   "edge-o-matic/2.0.1.json": _file5,
   "edge-o-matic/eom3k/2.0.1.json": _file6,
   "edge-o-matic/eom3k/2.0.2.json": _file7,
+  "edge-o-matic/eom3k/2.0.3.json": _file8,
+  "edge-o-matic/eom3k/2.0.4.json": _file9,
+  "edge-o-matic/eom3k/2.1.0-rc.1.json": _file10,
 };

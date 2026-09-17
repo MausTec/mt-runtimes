@@ -1,6 +1,6 @@
 {
     "name": "@maustec/mt-runtimes",
-    "version": "0.1.0",
+    "version": "v1.0.0",
     "description": "Runtime packs for Maus-Tec hardware products",
     "type": "module",
     "exports": {
